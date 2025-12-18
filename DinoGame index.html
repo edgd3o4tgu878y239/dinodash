@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dino Game: Action Arrange</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: url("//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/background-image.jpg");
+            background-color: #222;
+            font-family: 'Press Start 2P', cursive;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            /* 高さを固定せず、内容に合わせて伸縮させる（PC版は最大高さを指定） */
+            height: auto;
+            max-height: 400px;
+            aspect-ratio: 16/9; /* PCでの基本比率 */
+            padding: 0;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+            background: #f0f0f0;
+            border: 4px solid #444;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+
+        /* ▼▼▼ 画面下のリンクエリア ▼▼▼ */
+        #footer-ui {
+            margin-top: 15px;
+            text-align: center;
+            z-index: 100;
+            background-color: #222;
+        }
+        #open-license {
+            color: #888;
+            font-size: 10px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        #open-license:hover {
+            color: #fff;
+        }
+
+        /* ▼▼▼ ライセンスモーダル (画面全体) ▼▼▼ */
+        #license-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: none; /* 初期非表示 */
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        #license-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+        .license-content {
+            width: 85%;
+            max-width: 500px;
+            max-height: 70%;
+            background: #fff;
+            border: 4px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+            font-family: sans-serif;
+        }
+        .license-header {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .license-body {
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+        .license-close {
+            margin-top: 15px;
+            padding: 10px;
+            background: #333;
+            color: #fff;
+            text-align: center;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background-color: transparent;
+            image-rendering: pixelated;
+            z-index: 1;
+        }
+
+        /* ▼▼▼ ミュートボタン ▼▼▼ */
+        #mute-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 3px solid #333;
+            border-radius: 4px;
+            z-index: 300; /* 最前面に表示 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+            pointer-events: auto;
+            user-select: none;
+        }
+        #mute-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        /* ▼▼▼ タイトル画面 ▼▼▼ */
+        #title-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            overflow: hidden;
+            z-index: 200;
+        }
+        
+        .title-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            image-rendering: pixelated;
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        #title-img-1 { transform: translateX(0); z-index: 201; }
+        #title-img-2 { transform: translateX(-100%); z-index: 202; }
+
+        .title-ui-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 205;
+            pointer-events: none;
+        }
+
+        .title-text {
+            font-size: 16px;
+            color: #333;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 4px;
+            animation: blink 1s infinite;
+            margin-top: 15%; 
+        }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* ▼▼▼ メニュー画面 ▼▼▼ */
+        #menu-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(240, 240, 240, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            overflow: hidden;
+        }
+        .menu-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 0 #fff;
+            text-align: center;
+            line-height: 1.5;
+            z-index: 102;
+        }
+        .level-btn {
+            margin: 15px;
+            padding: 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 16px;
+            background: #fff;
+            border: 4px solid #333;
+            cursor: pointer;
+            color: #333;
+            width: 200px;
+            text-align: center;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+            z-index: 102;
+        }
+        .level-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+            background: #eee;
+        }
+
+        .menu-char {
+            position: absolute;
+            bottom: 0;
+            width: 150px;
+            height: auto;
+            image-rendering: pixelated;
+            z-index: 101;
+            transform: translateY(100%);
+        }
+        #menu-char-left { left: 20px; }
+        #menu-char-right { right: 20px; transform: translateY(100%) scaleX(-1); }
+
+        .slide-in-up { animation: slideInUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes slideInUp { 0% { transform: translateY(100%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        .slide-in-up-right { animation: slideInUpRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes slideInUpRight { 0% { transform: translateY(100%) scaleX(-1); opacity: 0; } 100% { transform: translateY(0) scaleX(-1); opacity: 1; } }
+        .slide-out-down { animation: slideOutDown 0.3s ease-in forwards; }
+        @keyframes slideOutDown { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(100%); opacity: 0; } }
+        .slide-out-down-right { animation: slideOutDownRight 0.3s ease-in forwards; }
+        @keyframes slideOutDownRight { 0% { transform: translateY(0) scaleX(-1); opacity: 1; } 100% { transform: translateY(100%) scaleX(-1); opacity: 0; } }
+
+        /* ゲーム内UI */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .message {
+            font-size: 20px;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #fff;
+            background: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 4px;
+            border: 2px solid #333;
+            pointer-events: auto;
+        }
+
+        .go-btn {
+            display: inline-block;
+            margin: 10px 5px 0 5px;
+            padding: 10px;
+            font-size: 12px;
+            background: #333;
+            color: #fff;
+            border: 2px solid #fff;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+        }
+        .go-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+
+        .score-board {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 16px;
+            color: #333;
+            text-align: right;
+            text-shadow: 2px 2px 0 #fff;
+            z-index: 5;
+        }
+
+        .gauge-container {
+            position: absolute;
+            top: 40px;
+            right: 15px;
+            width: 120px;
+            height: 8px;
+            background: #ccc;
+            border: 2px solid #333;
+            z-index: 5;
+        }
+        .gauge-fill {
+            height: 100%;
+            background: #ff9900;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        .gauge-ready {
+            background: #ff3333 !important;
+            box-shadow: 0 0 5px #ff3333;
+        }
+
+        /* コントローラー (PCでは下部に重ねて表示) */
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 15px;
+            pointer-events: auto;
+        }
+
+        .btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.8);
+            border: 3px solid #333;
+            color: #333;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            user-select: none;
+            touch-action: manipulation;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #333;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #333;
+            background: rgba(200, 200, 200, 0.8);
+        }
+
+        #btn-dash { width: 70px; height: 70px; background: rgba(220, 220, 220, 0.8); opacity: 0.5; }
+        #btn-dash.active { background: #ffcc00; opacity: 1; animation: pulse 1s infinite; border-color: #ff3300; }
+        #btn-atk { background: #ffcccc; }
+        #btn-jump { background: #ccffcc; width: 70px; height: 70px; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .score-pop {
+            position: absolute;
+            color: #333;
+            font-size: 16px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: popUp 0.8s ease-out forwards;
+            z-index: 15;
+        }
+        .score-pop.smash { color: #ff3333; font-size: 20px; }
+
+        @keyframes popUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-30px); opacity: 0; }
+        }
+
+        /* PC用操作ガイド */
+        #pc-controls-help {
+            margin-top: 20px;
+            color: #888;
+            font-size: 12px;
+            text-align: center;
+            line-height: 1.8;
+            background: #111;
+            padding: 15px 30px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .key-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border: 1px solid #666;
+            border-radius: 4px;
+            background: #333;
+            color: #fff;
+            font-family: monospace;
+            margin: 0 2px;
+        }
+        .control-row {
+            margin: 4px 0;
+        }
+
+        .hidden { display: none !important; }
+
+        /* ▼▼▼ スマートフォン向けレイアウト調整 ▼▼▼ */
+        @media (max-width: 600px) {
+            body {
+                /* 縦画面中央寄せ */
+                align-items: center;
+                justify-content: center;
+            }
+            #title-layer {
+            }
+            .title-img {
+            height: 70%;
+            }
+            #game-container {
+                /* 画面幅いっぱいより少し小さくし、枠としての存在感を出す */
+                width: 98%;
+                /* アスペクト比を解除し、内容物で高さを決める */
+                height: 400px;
+                max-height: 600px;
+                /* 背景色でゲーム機本体感を出す */
+                background-color: #ddd;
+                padding: 10px;
+                padding-bottom: 20px;
+                border-radius: 20px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+                border: 2px solid #555;
+            }
+
+            /* キャンバス（ゲーム画面） */
+            canvas {
+                width: 100%;
+                /* アスペクト比を固定して歪みを防ぐ (900:300 = 3:1) */
+                aspect-ratio: 3/1;
+                height: auto;
+                border: 2px solid #333;
+                border-radius: 4px;
+                background: #f0f0f0; /* 背景画像がない時のデフォルト色 */
+                margin-bottom: 20px; /* コントローラーとの隙間 */
+            }
+
+            /* タイトル画面などのレイヤーもCanvasエリアに合わせる */
+            #title-layer, #menu-layer, #ui-layer {
+                /* 親コンテナのpaddingを無視してcanvasの上に重なるように調整が必要だが、
+                   シンプルにコンテナ全体を覆う形にする */
+                border-radius: 16px; 
+            }
+            
+            /* コントローラー配置：Canvasの下に自然に配置 */
+            #controls {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                height: auto;
+                width: 100%;
+                padding: 0 10px;
+                margin-top: 10px;
+            }
+
+            /* ボタンサイズ調整 */
+            .btn {
+                width: 65px;
+                height: 65px;
+                font-size: 10px;
+            }
+            #btn-dash, #btn-jump {
+                width: 75px;
+                height: 75px;
+            }
+
+            /* メニュー調整 */
+            .menu-title { font-size: 16px; margin-bottom: 20px; }
+            .level-btn { width: 80%; font-size: 14px; margin: 8px; padding: 12px; }
+            .menu-char { width: 80px; }
+            .title-text { margin-top: 10%; font-size: 14px; }
+
+            /* スマホではPC用ガイドを非表示 */
+            #pc-controls-help {
+                display: none;
+            }
+
+            /* ▼▼▼ 追加: スマホ時はスコア加算表示を全体的に上にずらす ▼▼▼ */
+            .score-pop {
+                margin-top: -80px; /* ボタンに被らないよう上にずらす */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- ミュートボタン -->
+    <div id="mute-btn">🔊</div>
+
+    <!-- タイトル画面 -->
+    <div id="title-layer">
+        <img id="title-img-1" class="title-img" alt="Title Logo 1" />
+        <img id="title-img-2" class="title-img" alt="Title Logo 2" />
+        <div class="title-ui-container">
+            <div id="title-text-el" class="title-text">PRESS START</div>
+        </div>
+    </div>
+
+    <!-- メニュー画面 -->
+    <div id="menu-layer" class="hidden">
+        <div class="menu-title">SELECT DIFFICULTY</div>
+        <div class="level-btn" onclick="selectLevel(1)">LEVEL 1</div>
+        <div class="level-btn" onclick="selectLevel(2)">LEVEL 2</div>
+        <div class="level-btn" onclick="selectLevel(3)">LEVEL 3</div>
+        
+        <img id="menu-char-left" class="menu-char" alt="Girl">
+        <img id="menu-char-right" class="menu-char" alt="Dino">
+    </div>
+
+    <div class="score-board hidden" id="game-ui-score">
+        HI <span id="high-score">00000</span> <span id="current-score">00000</span>
+    </div>
+    <div class="gauge-container hidden" id="game-ui-gauge">
+        <div id="dash-gauge" class="gauge-fill"></div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="ui-layer" class="hidden">
+        <div id="start-message" class="message">TAP TO START</div>
+        
+        <div id="game-over-message" class="message hidden">
+            GAME OVER
+            <br><br>
+            <div onclick="retryGame()" class="go-btn">RETRY</div>
+            <div onclick="backToMenu()" class="go-btn">MENU</div>
+        </div>
+    </div>
+    <div id="effect-container" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></div>
+
+    <div id="controls" class="hidden">
+        <div class="control-group">
+            <div id="btn-dash" class="btn">DASH</div>
+        </div>
+        <div class="control-group" style="align-items: flex-end;">
+            <div id="btn-atk" class="btn">ATK</div>
+            <div id="btn-jump" class="btn">JUMP</div>
+        </div>
+    </div>
+</div>
+
+<!-- PC用操作ガイド -->
+<div id="pc-controls-help">
+    <div class="control-row">JUMP: <span class="key-badge">SPACE</span> / <span class="key-badge">↑</span></div>
+    <div class="control-row">ATK : <span class="key-badge">H</span> / <span class="key-badge">→</span></div>
+    <div class="control-row">DASH: <span class="key-badge">G</span> / <span class="key-badge">↓</span></div>
+</div>
+<!-- 画面下のリンク -->
+<div id="footer-ui">
+    <a id="open-license">CREDIT</a>
+</div>
+
+<!-- ライセンスモーダル -->
+<div id="license-modal">
+    <div class="license-content">
+        <div class="license-header">CREDIT</div>
+        <div class="license-body">
+            <p><strong>Game Design & Programming:</strong><br>Gemini (Google AI)</p>
+            <p><strong>Prompt Keypuncher:</strong><br><a href="https://x.com/msoyu62k22">Harris(msoyu62k22)</a></p>
+            <p><strong>Assets Credit:</strong></p>
+            <ul>
+                <li>BGM: "DINO DASH" (Suno AI)</li>
+                <li>Backgrounds & Clouds: Nano Banana (Google AI)</li>
+                <li>Player & Enemy Sprites: Nano Banana (Google AI)</li>
+                <li>Sound Effects: Generated via Web Audio API</li>
+            </ul>
+            <p><strong>License / About:</strong></p>
+            <p>This is a non-profit, fan-made tribute to the Google Chrome "Dino Game" and is unaffiliated with Google. Approximately 99% of the content, including code, visuals, and audio, was generated by AI tools with minor manual edits. I disclaim ownership rights to the AI-generated assets. Any use must adhere to the terms of service of the respective AI platforms used for their generation.</p>
+        </div>
+        <div class="license-close" id="license-close">CLOSE</div>
+    </div>
+</div>
+
+<script>
+    // ▼▼▼ カスタムアセット設定エリア ▼▼▼
+    // ※ ここに用意したファイルのURLを貼り付けてください。
+    // ※ 何も書かない("")場合は、デフォルトの画像や図形が使用されます。
+
+    // 【BGM】 (MP3など)
+    const CUSTOM_BGM_URL = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/DINODASH.mp3"; 
+
+    // 【背景・環境】
+    const CUSTOM_BG     = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/background1.png"; // 遠景 (ゆっくりスクロールする背景)
+    const CUSTOM_GROUND = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/background2.png"; // 地面 (ゲーム速度でスクロールする床画像)
+    const CUSTOM_CLOUD  = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/cloud.png"; // 雲
+
+    // 【プレイヤー画像】
+    const CUSTOM_DINO_RUN_1    = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/dinorun1.png"; // 走る 1
+    const CUSTOM_DINO_RUN_2    = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/dinorun2.png"; // 走る 2
+    const CUSTOM_DINO_HEADBUTT = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/headbutt.png"; // 頭突き / ダッシュ
+    const CUSTOM_DINO_CRASH    = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/crash.png"; // ゲームオーバー
+
+    // 【障害物画像】
+    const CUSTOM_CACTUS_1 = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/cacuts1.png"; // 小さい障害物
+    const CUSTOM_CACTUS_2 = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/cacuts2.png"; // 大きい障害物
+    const CUSTOM_CACTUS_3 = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/cacuts3.png"; // 特大障害物
+
+    // 【タイトル画像】
+    const CUSTOM_TITLE_1 = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/title1.jpg"; // 起動直後
+    const CUSTOM_TITLE_2 = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/title2.jpg"; // タップ後
+
+    // 【メニュー装飾画像】
+    const CUSTOM_MENU_LEFT  = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/menuleft.png"; // 左側のキャラ
+    const CUSTOM_MENU_RIGHT = "//raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/menuright.png"; // 右側のキャラ
+    
+    // ▲▲▲ カスタムアセット設定ここまで ▲▲▲
+    
+
+    // ▼▼▼ 以下、ゲームロジック ▼▼▼
+
+    const SVG_STYLE = `<style>.dino{fill:#333}.skin{fill:#fff0e0}.hair{fill:#a0a0a0}.hoodie{fill:#ff3366}.shorts{fill:#222}.eye{fill:#6600cc}.shoe{fill:#cc0000}</style>`;
+    const createSvgDataUri = (content) => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>${SVG_STYLE}${content}</svg>`);
+
+    // デフォルトのアセット定義
+    const DEFAULT_DINO_RUN_1 = createSvgDataUri(`<path class='dino' d='M40 16h16v12h-6v2h6v6h-4v2h-4v2h-2v4h-2v4h2v2h2v6h-4v-4h-2v-2h-2v-2h-2v6h-4v-4h-2v-4h-2v-2h-2v-2h-2v-6h2v-2h2v-2h2v-2h2v-2h2v-2h2v-4h2v-4h2v-4h6v-2h-2v-2h2v-2h8z'/><rect class='skin' x='24' y='10' width='8' height='8'/><rect class='hair' x='22' y='8' width='12' height='4'/><rect class='hair' x='22' y='8' width='2' height='10'/><rect class='hair' x='32' y='8' width='2' height='8'/><rect class='eye' x='29' y='13' width='2' height='2'/><path class='hoodie' d='M24 18h10v10h-2v2h-2v-2h-2v2h-2v-2h-2z'/><path class='hoodie' d='M20 18h4v6h-4z'/><rect class='skin' x='30' y='22' width='4' height='3'/><rect class='skin' x='28' y='28' width='4' height='6'/><rect class='shorts' x='26' y='26' width='8' height='4'/><rect class='shoe' x='28' y='34' width='5' height='3'/>`);
+    const DEFAULT_DINO_RUN_2 = createSvgDataUri(`<path class='dino' d='M40 15h16v12h-6v2h6v6h-4v2h-4v2h-2v4h-2v4h2v2h-2v4h-4v-4h-2v-4h-4v6h-4v-4h-2v-4h-2v-2h-2v-2h-2v-6h2v-2h2v-2h2v-2h2v-2h2v-2h2v-4h2v-4h2v-4h6v-2h-2v-2h2v-2h8z'/><g transform='translate(0, -1)'><rect class='skin' x='24' y='10' width='8' height='8'/><rect class='hair' x='22' y='8' width='12' height='4'/><rect class='hair' x='22' y='8' width='2' height='10'/><rect class='hair' x='32' y='8' width='2' height='8'/><rect class='eye' x='29' y='13' width='2' height='2'/><path class='hoodie' d='M24 18h10v10h-2v2h-2v-2h-2v2h-2v-2h-2z'/><path class='hoodie' d='M20 18h4v6h-4z'/><rect class='skin' x='30' y='22' width='4' height='3'/><rect class='skin' x='28' y='28' width='4' height='6'/><rect class='shorts' x='26' y='26' width='8' height='4'/><rect class='shoe' x='28' y='34' width='5' height='3'/></g>`);
+    const DEFAULT_DINO_HEADBUTT = createSvgDataUri(`<g transform='translate(6, 4)'><path class='dino' d='M44 16h16v12h-6v2h6v6h-4v2h-4v2h-2v4h-2v4h2v2h2v6h-4v-4h-2v-2h-2v-2h-2v6h-4v-4h-2v-4h-2v-2h-2v-2h-2v-6h2v-2h2v-2h2v-2h2v-2h2v-2h2v-4h2v-4h2v-4h6v-2h-2v-2h2v-2h8z'/><rect fill='#fff' x='56' y='14' width='8' height='2'/><rect fill='#fff' x='58' y='18' width='6' height='2'/></g><g transform='translate(6, 4)'><rect class='skin' x='26' y='12' width='8' height='8'/><rect class='hair' x='24' y='10' width='12' height='4'/><rect class='hair' x='24' y='10' width='2' height='10'/><rect class='hair' x='34' y='10' width='2' height='8'/><rect class='eye' x='31' y='15' width='2' height='2'/><path class='hoodie' d='M26 20h10v10h-2v2h-2v-2h-2v2h-2v-2h-2z'/><path class='hoodie' d='M22 20h4v6h-4z'/><rect class='skin' x='32' y='24' width='6' height='3'/><rect class='skin' x='28' y='30' width='4' height='6'/><rect class='shorts' x='26' y='28' width='8' height='4'/><rect class='shoe' x='28' y='36' width='5' height='3'/></g>`);
+    const DEFAULT_DINO_CRASH = createSvgDataUri(`<path class='dino' d='M40 16h16v12h-6v2h6v6h-4v2h-4v2h-2v4h-2v4h2v2h2v6h-4v-4h-2v-2h-2v-2h-2v6h-4v-4h-2v-4h-2v-2h-2v-2h-2v-6h2v-2h2v-2h2v-2h2v-2h2v-2h2v-4h2v-4h2v-4h6v-2h-2v-2h2v-2h8z'/><rect fill='%23fff' x='46' y='20' width='4' height='4'/><rect fill='%23333' x='47' y='21' width='2' height='2'/><g transform='translate(0, -2)'><rect class='skin' x='24' y='10' width='8' height='8'/><rect class='hair' x='22' y='6' width='12' height='6'/><rect class='hair' x='20' y='8' width='2' height='8'/><rect class='hair' x='34' y='8' width='2' height='6'/><rect class='eye' x='26' y='13' width='2' height='2'/><rect class='eye' x='30' y='13' width='2' height='2'/><rect fill='%23000' x='28' y='16' width='2' height='2'/><path class='hoodie' d='M24 18h10v10h-2v2h-2v-2h-2v2h-2v-2h-2z'/><path class='hoodie' d='M18 16h6v4h-6z'/><rect class='skin' x='16' y='14' width='3' height='4'/><rect class='skin' x='28' y='28' width='4' height='6'/><rect class='shorts' x='26' y='26' width='8' height='4'/><rect class='shoe' x='28' y='34' width='5' height='3'/></g>`);
+
+    const DEFAULT_TITLE_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'%3E%3Crect width='400' height='160' fill='%23e0e0e0'/%3E%3Ctext x='50' y='100' font-family='monospace' font-size='48' font-weight='bold' fill='%23333'%3EDINO RUN%3C/text%3E%3C/svg%3E";
+    const DEFAULT_TITLE_IMG_2 = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'%3E%3Crect width='400' height='160' fill='%23ffffcc'/%3E%3Ctext x='50' y='100' font-family='monospace' font-size='48' font-weight='bold' fill='%23ff3366'%3EDINO RUN%3C/text%3E%3Cpath d='M20,120 L380,120' stroke='%23ff9900' stroke-width='8' /%3E%3C/svg%3E";
+
+    const DEFAULT_MENU_LEFT = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 64 64'%3E" + SVG_STYLE + "%3Crect class='skin' x='24' y='10' width='8' height='8'/%3E%3Crect class='hair' x='22' y='8' width='12' height='4'/%3E%3Crect class='hair' x='22' y='8' width='2' height='10'/%3E%3Crect class='hair' x='32' y='8' width='2' height='8'/%3E%3Crect class='eye' x='29' y='13' width='2' height='2'/%3E%3Cpath class='hoodie' d='M24 18h10v10h-2v2h-2v-2h-2v2h-2v-2h-2z'/%3E%3Cpath class='hoodie' d='M20 18h4v6h-4z'/%3E%3Crect class='skin' x='30' y='22' width='4' height='3'/%3E%3Crect class='skin' x='28' y='28' width='4' height='6'/%3E%3Crect class='shorts' x='26' y='26' width='8' height='4'/%3E%3Crect class='shoe' x='28' y='34' width='5' height='3'/%3E%3C/svg%3E";
+    const DEFAULT_MENU_RIGHT = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 64 64'%3E" + SVG_STYLE + "%3Cpath class='dino' d='M40 16h16v12h-6v2h6v6h-4v2h-4v2h-2v4h-2v4h2v2h2v6h-4v-4h-2v-2h-2v-2h-2v6h-4v-4h-2v-4h-2v-2h-2v-2h-2v-6h2v-2h2v-2h2v-2h2v-2h2v-2h2v-4h2v-4h2v-4h6v-2h-2v-2h2v-2h8z'/%3E%3C/svg%3E";
+
+    // アセット適用ロジック
+    const IMG_DINO_RUN_1 = CUSTOM_DINO_RUN_1 || DEFAULT_DINO_RUN_1;
+    const IMG_DINO_RUN_2 = CUSTOM_DINO_RUN_2 || DEFAULT_DINO_RUN_2;
+    const IMG_DINO_HEADBUTT = CUSTOM_DINO_HEADBUTT || DEFAULT_DINO_HEADBUTT;
+    const IMG_DINO_CRASH = CUSTOM_DINO_CRASH || DEFAULT_DINO_CRASH;
+    const TITLE_IMG_SRC = CUSTOM_TITLE_1 || DEFAULT_TITLE_IMG;
+    const TITLE_IMG_SRC_2 = CUSTOM_TITLE_2 || DEFAULT_TITLE_IMG_2;
+    const MENU_CHAR_LEFT = CUSTOM_MENU_LEFT || DEFAULT_MENU_LEFT;
+    const MENU_CHAR_RIGHT = CUSTOM_MENU_RIGHT || DEFAULT_MENU_RIGHT;
+    const BGM_SRC = CUSTOM_BGM_URL;
+
+
+    // ▼▼▼ 音声管理クラス ▼▼▼
+    class SoundManager {
+        constructor() {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            this.enabled = true;
+            this.bgm = null;
+            this.bgmInterval = null;
+            this.isMuted = false; // ミュートフラグ
+            
+            if (BGM_SRC) {
+                this.bgm = new Audio(BGM_SRC);
+                this.bgm.loop = true;
+                this.bgm.volume = 0.5;
+            }
+
+            // ミュートボタンのイベント登録
+            const muteBtn = document.getElementById('mute-btn');
+            muteBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation(); // ゲームへのクリック伝播を防ぐ
+                this.toggleMute();
+            });
+            muteBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleMute();
+            }, {passive: false});
+        }
+        
+        toggleMute() {
+            this.isMuted = !this.isMuted;
+            const btn = document.getElementById('mute-btn');
+            
+            if (this.isMuted) {
+                this.stopBgm();
+                btn.innerText = "🔇";
+                btn.style.background = "rgba(200, 200, 200, 0.9)";
+            } else {
+                btn.innerText = "🔊";
+                btn.style.background = "rgba(255, 255, 255, 0.9)";
+                
+                // タイトル画面がPhase1以降（BGM再生中フェーズ）ならBGM再開
+                if (typeof titlePhase !== 'undefined' && titlePhase > 0) {
+                    // コンテキストがサスペンド中なら再開してから再生
+                    this.resumeContext().then(() => {
+                         this.playBgm();
+                    });
+                }
+            }
+        }
+
+        resumeContext() {
+            if (this.ctx.state === 'suspended') {
+                return this.ctx.resume();
+            }
+            return Promise.resolve();
+        }
+
+        playBgm() {
+            if (this.isMuted) return;
+
+            // 外部BGMファイルがある場合
+            if (this.bgm) {
+                // 頭出し再生
+                this.bgm.currentTime = 0;
+                this.bgm.play().catch(e => console.log('BGM play failed:', e));
+            } else {
+                // ない場合は内蔵シンセサイザーBGMを開始
+                this.startSimpleBgm();
+            }
+        }
+
+        stopBgm() {
+            if (this.bgm) {
+                this.bgm.pause();
+                this.bgm.currentTime = 0;
+            }
+            if (this.bgmInterval) {
+                clearInterval(this.bgmInterval);
+                this.bgmInterval = null;
+            }
+        }
+
+        // 内蔵BGM機能 (8bit風アルペジオ)
+        startSimpleBgm() {
+            if (this.bgmInterval) return; // すでに再生中なら無視
+            if (this.isMuted) return; // ミュート中なら開始しない
+
+            let noteIndex = 0;
+            // Cメジャーペンタトニック的なパターン
+            const notes = [
+                261.63, 329.63, 392.00, 523.25, // C E G C
+                261.63, 329.63, 392.00, 523.25,
+                220.00, 261.63, 329.63, 440.00, // A C E A
+                196.00, 246.94, 293.66, 392.00  // G B D G
+            ];
+            
+            // テンポに合わせてループ再生
+            const bpm = 150;
+            const interval = 60000 / bpm / 2; // 8分音符
+
+            this.bgmInterval = setInterval(() => {
+                if (this.isMuted) {
+                    this.stopBgm();
+                    return;
+                }
+                
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const freq = notes[noteIndex % notes.length];
+                
+                // ベース音とメロディ音を重ねる
+                this.playTone('square', freq, 0.1, 0, 0.05);
+                if (noteIndex % 4 === 0) {
+                    this.playTone('triangle', freq / 2, 0.2, 0, 0.05); // ベース音
+                }
+
+                noteIndex++;
+            }, interval);
+        }
+
+        playTone(type, freq, duration, slide = 0, vol = 0.1) {
+            if (!this.enabled || this.isMuted) return;
+            // コンテキストがサスペンド状態なら再開を試みるが、
+            // ユーザー操作イベント内でないとブロックされる可能性がある
+            if(this.ctx.state === 'suspended') this.ctx.resume().catch(()=>{});
+            
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            if (slide !== 0) osc.frequency.linearRampToValueAtTime(freq + slide, this.ctx.currentTime + duration);
+            else if (type === 'square') osc.frequency.exponentialRampToValueAtTime(freq * 4, this.ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(vol, this.ctx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + duration);
+        }
+        playJump() { this.playTone('square', 200, 0.15, 0, 0.3); }
+        playScore() { this.playTone('sine', 800, 0.3, 0, 0.2); }
+        playGameOver() { this.playTone('sawtooth', 150, 0.5, 0, 0.3); }
+        playStomp() { this.playTone('triangle', 300, 0.1, 100, 0.3); }
+        playHeadbuttSwing() { this.playTone('sine', 150, 0.1, -50, 0.3); }
+        playDashStart() {
+            if (!this.enabled || this.isMuted) return;
+            if(this.ctx.state === 'suspended') this.ctx.resume();
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.5);
+            gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.5);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.5);
+        }
+        playSmash() { 
+            if (!this.enabled || this.isMuted) return;
+            if(this.ctx.state === 'suspended') this.ctx.resume();
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(100, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.2);
+        }
+        // タイトル画面での肯定音
+        playSelect() {
+            if(this.isMuted) return;
+            this.playTone('sine', 440, 0.1, 0, 0.3);
+            setTimeout(() => this.playTone('sine', 880, 0.2, 0, 0.3), 50);
+        }
+    }
+    const soundManager = new SoundManager();
+
+    // ▼▼▼ 設定値 (初期値) ▼▼▼
+    const CONFIG = {
+        CANVAS_WIDTH: 900,
+        CANVAS_HEIGHT: 300,
+        GRAVITY: 1.6,      
+        JUMP_FORCE: -22,   
+        BOUNCE_FORCE: -15, 
+        GROUND_Y: 250,
+        GAME_SPEED_START: 6.0, 
+        MAX_SPEED: 30.0,       
+        ACCELERATION: 0.001,
+        SPAWN_RATE_MIN: 100,
+        SPAWN_RATE_MAX: 220,
+        DINO_X: 60,
+        STOMP_SCORE: 10,
+        HEADBUTT_SCORE: 20, 
+        HEADBUTT_DURATION: 6,
+        HEADBUTT_COOLDOWN: 50, 
+        HIT_STOP_DURATION: 8,
+        DASH_GAUGE_MAX: 150,
+        DASH_DURATION: 450,
+        DASH_SPEED_MULTIPLIER: 1.2,
+        INVINCIBLE_DURATION: 60,
+        SCORE_MULTIPLIER: 1.0,
+        FPS: 60
+    };
+
+    // ▼▼▼ 難易度テーブル (統一) ▼▼▼
+    const LEVELS = {
+        1: { SPEED: 10.0,  ACCEL: 0.0020, MAX_SPEED: 18.0, SPAWN_MIN: 50, SPAWN_MAX: 160, SCORE_MULT: 1.0 },
+        2: { SPEED: 14.0, ACCEL: 0.0025, MAX_SPEED: 28.0, SPAWN_MIN: 40, SPAWN_MAX: 120, SCORE_MULT: 1.5 },
+        3: { SPEED: 18.0, ACCEL: 0.0030, MAX_SPEED: 80.0, SPAWN_MIN: 30, SPAWN_MAX: 90,  SCORE_MULT: 3.0 }
+    };
+
+
+
+    let gameInstance = null;
+    let titlePhase = 0; // 0: 初期(モノクロ), 1: アクティブ(カラー/BGM再生中)
+
+    const titleImg1 = document.getElementById('title-img-1');
+    const titleImg2 = document.getElementById('title-img-2');
+    const titleTextEl = document.getElementById('title-text-el');
+    titleImg1.src = TITLE_IMG_SRC;
+    titleImg2.src = TITLE_IMG_SRC_2;
+    document.getElementById('menu-char-left').src = MENU_CHAR_LEFT;
+    document.getElementById('menu-char-right').src = MENU_CHAR_RIGHT;
+
+    function showMenu() {
+        const menu = document.getElementById('menu-layer');
+        const charL = document.getElementById('menu-char-left');
+        const charR = document.getElementById('menu-char-right');
+
+        charL.classList.remove('slide-in-up', 'slide-out-down');
+        charR.classList.remove('slide-in-up-right', 'slide-out-down-right');
+        
+        void charL.offsetWidth; 
+
+        menu.classList.remove('hidden');
+        charL.classList.add('slide-in-up');
+        charR.classList.add('slide-in-up-right');
+    }
+
+    function hideMenu(onComplete) {
+        const charL = document.getElementById('menu-char-left');
+        const charR = document.getElementById('menu-char-right');
+
+        charL.classList.remove('slide-in-up');
+        charL.classList.add('slide-out-down');
+        
+        charR.classList.remove('slide-in-up-right');
+        charR.classList.add('slide-out-down-right');
+
+        setTimeout(() => {
+            document.getElementById('menu-layer').classList.add('hidden');
+            if (onComplete) onComplete();
+        }, 300);
+    }
+
+    // ▼▼▼ ライセンス表示ロジック ▼▼▼
+    const openLicense = document.getElementById('open-license');
+    const licenseModal = document.getElementById('license-modal');
+    const licenseClose = document.getElementById('license-close');
+
+    openLicense.onclick = () => { licenseModal.style.display = "flex"; setTimeout(() => licenseModal.classList.add('active'), 10); };
+    licenseClose.onclick = () => { licenseModal.classList.remove('active'); setTimeout(() => licenseModal.style.display = "none", 300); };
+    licenseModal.onclick = (e) => { if (e.target === licenseModal) licenseClose.onclick(); };
+
+    // タイトル画面のインタラクション制御
+    function handleTitleInteraction() {
+        const titleLayer = document.getElementById('title-layer');
+        if (titleLayer.classList.contains('hidden')) return;
+
+        // Phase 0 -> Phase 1: BGM開始 & 画像スライド (1が右へ、2が左から中央へ)
+        if (titlePhase === 0) {
+            soundManager.resumeContext();
+            soundManager.playSelect();
+            soundManager.playBgm();
+            
+            // スライドアニメーション
+            titleImg1.style.transform = 'translateX(100%)'; // 右へ退場
+            titleImg2.style.transform = 'translateX(0)';    // 左から入場
+            
+            titleTextEl.innerText = "TAP TO MENU";
+            titleTextEl.style.color = "#ff3366";
+            
+            titlePhase = 1;
+        } 
+        // Phase 1 -> Phase 2: メニューへ遷移 (2が右へ)
+        else if (titlePhase === 1) {
+            soundManager.resumeContext();
+            soundManager.playDashStart(); 
+            
+            // 画像2を右へスライドアウト
+            titleImg2.style.transform = 'translateX(100%)';
+            // テキストもフェードアウトっぽく
+            titleTextEl.style.opacity = '0';
+
+            setTimeout(() => {
+                titleLayer.classList.add('hidden');
+                showMenu();
+            }, 350);
+        }
+    }
+
+    const titleLayer = document.getElementById('title-layer');
+    titleLayer.addEventListener('click', handleTitleInteraction);
+    titleLayer.addEventListener('touchstart', (e) => { e.preventDefault(); handleTitleInteraction(); }, {passive: false});
+    window.addEventListener('keydown', (e) => {
+        if (!titleLayer.classList.contains('hidden')) {
+            handleTitleInteraction();
+        }
+    });
+
+    function selectLevel(level) {
+        hideMenu(() => {
+            startGame(level);
+        });
+    }
+
+    function startGame(level) {
+        if (gameInstance) {
+            gameInstance.destroy();
+            gameInstance = null;
+        }
+
+        const setting = LEVELS[level];
+        CONFIG.GAME_SPEED_START = setting.SPEED;
+        CONFIG.ACCELERATION = setting.ACCEL;
+        CONFIG.MAX_SPEED = setting.MAX_SPEED;
+        CONFIG.SPAWN_RATE_MIN = setting.SPAWN_MIN;
+        CONFIG.SPAWN_RATE_MAX = setting.SPAWN_MAX;
+        CONFIG.SCORE_MULTIPLIER = setting.SCORE_MULT;
+        
+        // 重力などはCONFIG初期値(PC基準)のまま固定
+        CONFIG.GRAVITY = 1.6;
+        CONFIG.JUMP_FORCE = -22;
+
+        document.getElementById('ui-layer').classList.remove('hidden');
+        document.getElementById('game-ui-score').classList.remove('hidden');
+        document.getElementById('game-ui-gauge').classList.remove('hidden');
+        document.getElementById('controls').classList.remove('hidden');
+        
+        document.getElementById('start-message').classList.remove('hidden');
+        document.getElementById('game-over-message').classList.add('hidden');
+
+        gameInstance = new Game();
+    }
+
+    function backToMenu() {
+        if (gameInstance) {
+            gameInstance.destroy();
+            gameInstance = null;
+        }
+        document.getElementById('ui-layer').classList.add('hidden');
+        document.getElementById('game-ui-score').classList.add('hidden');
+        document.getElementById('game-ui-gauge').classList.add('hidden');
+        document.getElementById('controls').classList.add('hidden');
+
+        showMenu();
+    }
+
+    function retryGame() {
+        if (gameInstance) {
+            gameInstance.reset();
+            gameInstance.start();
+        }
+    }
+
+    class SpriteManager {
+        constructor() { this.images = {}; }
+        load(key, src) { 
+            if (!src) return;
+            const img = new Image(); 
+            img.src = src; 
+            this.images[key] = img; 
+        }
+        get(key) { return this.images[key]; }
+    }
+    const sprites = new SpriteManager();
+    sprites.load('dino_run_1', IMG_DINO_RUN_1);
+    sprites.load('dino_run_2', IMG_DINO_RUN_2);
+    sprites.load('dino_headbutt', IMG_DINO_HEADBUTT);
+    sprites.load('dino_crash', IMG_DINO_CRASH);
+    sprites.load('bg', CUSTOM_BG);
+    sprites.load('ground', CUSTOM_GROUND);
+    sprites.load('cloud', CUSTOM_CLOUD);
+    sprites.load('cactus_1', CUSTOM_CACTUS_1);
+    sprites.load('cactus_2', CUSTOM_CACTUS_2);
+    sprites.load('cactus_3', CUSTOM_CACTUS_3);
+
+    // ▼ 新クラス: 無限スクロールする背景/地面レイヤー ▼
+    class ScrollingLayer {
+        constructor(imgKey, speedFactor, yOffset = 0, isGround = false) {
+            this.imgKey = imgKey;
+            this.speedFactor = speedFactor; // 1.0 = ゲームスピードと同じ、0.2 = ゆっくり（遠景）
+            this.x = 0;
+            this.yOffset = yOffset;
+            this.isGround = isGround;
+        }
+
+        update(gameSpeed) {
+            this.x -= gameSpeed * this.speedFactor;
+        }
+
+        draw(ctx, canvasWidth, canvasHeight) {
+            const img = sprites.get(this.imgKey);
+            if (img && img.complete && img.naturalWidth !== 0) {
+                const w = img.naturalWidth;
+                const h = img.naturalHeight;
+                
+                let drawY = this.yOffset;
+                if (this.isGround) {
+                     drawY = CONFIG.GROUND_Y;
+                }
+
+                let renderX = this.x % w;
+                if (renderX > 0) renderX -= w;
+
+                while (renderX < canvasWidth) {
+                    ctx.drawImage(img, Math.floor(renderX), drawY, w + 1, h);
+                    renderX += w;
+                }
+            } else {
+                if (this.isGround) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, CONFIG.GROUND_Y);
+                    ctx.lineTo(canvasWidth, CONFIG.GROUND_Y);
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+
+    class Particle {
+        constructor(x, y) {
+            this.x = x; this.y = y;
+            this.vx = (Math.random() - 0.5) * 10;
+            this.vy = (Math.random() - 1.5) * 10;
+            this.size = Math.random() * 6 + 4;
+            this.color = '#333';
+            this.life = 1.0;
+            this.decay = Math.random() * 0.03 + 0.02;
+            this.gravity = 0.5;
+        }
+        update() {
+            this.vx *= 0.95; this.vy += this.gravity;
+            this.x += this.vx; this.y += this.vy;
+            this.life -= this.decay;
+        }
+        draw(ctx) {
+            ctx.fillStyle = this.color;
+            ctx.globalAlpha = Math.max(0, this.life);
+            ctx.fillRect(this.x, this.y, this.size, this.size);
+            ctx.globalAlpha = 1.0;
+        }
+    }
+
+    class Dino {
+        constructor() {
+            this.width = 80; this.height = 80;
+            this.x = CONFIG.DINO_X; this.y = CONFIG.GROUND_Y - this.height;
+            this.dy = 0; this.jumpPower = CONFIG.JUMP_FORCE;
+            this.grounded = true; this.crashed = false;
+            this.timer = 0; this.legFrame = 0;
+            this.isHeadbutting = false; this.headbuttTimer = 0; this.headbuttCooldown = 0;
+            this.trail = []; 
+        }
+        jump() {
+            if (this.grounded && !this.isHeadbutting) {
+                this.dy = this.jumpPower; this.grounded = false; return true;
+            }
+            return false;
+        }
+        triggerHeadbutt() {
+            if (!this.headbuttCooldown && !this.isHeadbutting && !this.crashed) {
+                this.isHeadbutting = true;
+                this.headbuttTimer = CONFIG.HEADBUTT_DURATION;
+                this.headbuttCooldown = CONFIG.HEADBUTT_COOLDOWN;
+                return true;
+            }
+            return false;
+        }
+        bounce() { this.dy = CONFIG.BOUNCE_FORCE; this.grounded = false; }
+        update(isDashing) {
+            this.dy += CONFIG.GRAVITY; this.y += this.dy;
+            if (this.y > CONFIG.GROUND_Y - this.height) { this.y = CONFIG.GROUND_Y - this.height; this.dy = 0; this.grounded = true; } else { this.grounded = false; }
+            if (isDashing) {
+                this.trail.push({ x: this.x, y: this.y, imgKey: 'dino_headbutt', alpha: 0.6 });
+                if (this.trail.length > 5) this.trail.shift();
+            } else { this.trail = []; }
+            if (this.isHeadbutting) { this.headbuttTimer--; if (this.headbuttTimer <= 0) this.isHeadbutting = false; }
+            if (this.headbuttCooldown > 0) this.headbuttCooldown--;
+            this.timer++; if (this.timer > 6) { this.legFrame = !this.legFrame; this.timer = 0; }
+        }
+        draw(ctx, isDashing) {
+            if (isDashing) {
+                this.trail.forEach((t, i) => {
+                    const img = sprites.get(t.imgKey);
+                    if (img && img.complete) {
+                        ctx.save(); ctx.globalAlpha = t.alpha * (i / this.trail.length);
+                        ctx.drawImage(img, t.x - (this.trail.length - i) * 10, t.y, this.width, this.height);
+                        ctx.restore();
+                    }
+                });
+            }
+            let imgKey = 'dino_run_1';
+            if (isDashing || this.isHeadbutting) imgKey = 'dino_headbutt';
+            else if (this.crashed) imgKey = 'dino_crash';
+            else if (this.legFrame) imgKey = 'dino_run_2';
+            const img = sprites.get(imgKey);
+            if (this.headbuttCooldown > 0 && !this.isHeadbutting && !isDashing) ctx.globalAlpha = 0.7; else ctx.globalAlpha = 1.0;
+            if (img && img.complete && img.naturalWidth !== 0) ctx.drawImage(img, this.x, this.y, this.width, this.height);
+            else { ctx.fillStyle = '#ff3366'; ctx.fillRect(this.x, this.y, this.width, this.height); }
+            ctx.globalAlpha = 1.0;
+        }
+        getBounds() { return { x: this.x + 20, y: this.y + 15, width: this.width - 40, height: this.height - 15 }; }
+        getHeadbuttBounds() {
+            if (!this.isHeadbutting) return null;
+            return { x: this.x + this.width - 25, y: this.y + 10, width: 35, height: 40 };
+        }
+    }
+
+    class Cactus {
+        constructor(x, speed, type) {
+            this.x = x; this.type = type; this.markedForDeletion = false; this.isStepped = false;
+            if (this.type === 0) { this.width = 45; this.height = 60; }
+            else if (this.type === 1) { this.width = 45; this.height = 85; }
+            else { this.width = 50; this.height = 95; }
+            this.y = CONFIG.GROUND_Y - this.height;
+        }
+        update(speed) { this.x -= speed; if (this.x + this.width < 0) this.markedForDeletion = true; }
+        
+        draw(ctx) {
+            let imgKey = null;
+            if (this.type === 0) imgKey = 'cactus_1';
+            else if (this.type === 1) imgKey = 'cactus_2';
+            else imgKey = 'cactus_3';
+            
+            const img = sprites.get(imgKey);
+
+            // ★ 視認性向上のためのエフェクト: 白い縁取り（発光）効果
+            // これにより、どんな背景色でもオブジェクトのシルエットが際立ちます
+            ctx.save();
+            ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+
+            if (img && img.complete && img.naturalWidth !== 0) {
+                if (this.isStepped) {
+                    ctx.globalAlpha = 0.5;
+                    ctx.translate(0, 20);
+                    // 踏まれた後は発光を消す
+                    ctx.shadowBlur = 0;
+                }
+                ctx.drawImage(img, this.x, this.y, this.width, this.height);
+            } else {
+                ctx.fillStyle = this.isStepped ? '#777' : '#333'; 
+                const yOffset = this.isStepped ? 20 : 0; const hScale = this.isStepped ? 0.6 : 1.0;
+                const drawY = this.y + yOffset; const drawH = this.height * hScale;
+                
+                // 矩形描画モードでも発光は有効
+                if (this.type === 0) { ctx.fillRect(this.x + 10, drawY, 10, drawH); ctx.fillRect(this.x, drawY + 20, 8, 15); ctx.fillRect(this.x + 22, drawY + 10, 8, 15); }
+                else if (this.type === 1) { ctx.fillRect(this.x + 15, drawY, 15, drawH); ctx.fillRect(this.x, drawY + 25, 12, 25); ctx.fillRect(this.x + 33, drawY + 15, 12, 25); }
+                else { ctx.fillRect(this.x + 10, drawY, 10, drawH); ctx.fillRect(this.x, drawY + 20, 8, 15); ctx.fillRect(this.x + 50, drawY, 10, drawH); ctx.fillRect(this.x + 62, drawY + 10, 8, 15); }
+            }
+            ctx.restore();
+        }
+        getBounds() { return { x: this.x+5, y: this.y+5, width: this.width-10, height: this.height-10 }; }
+    }
+
+    class Cloud {
+        constructor(canvasWidth) { this.x = canvasWidth; this.y = Math.random() * 90 + 20; this.speed = 1 + Math.random() * 1.5; this.width = 80; this.height = 40; }
+        update() { this.x -= this.speed; if (this.x + this.width < 0) this.markedForDeletion = true; }
+        draw(ctx) {
+            const img = sprites.get('cloud');
+            if (img && img.complete && img.naturalWidth !== 0) {
+                 ctx.drawImage(img, this.x, this.y, this.width, this.height);
+            } else {
+                ctx.fillStyle = '#d0d0d0'; ctx.fillRect(this.x, this.y, this.width, 24); ctx.fillStyle = '#f0f0f0'; ctx.fillRect(this.x, this.y, 20, 10); ctx.fillRect(this.x + 60, this.y, 20, 10);
+            }
+        }
+    }
+
+    class Game {
+        constructor() {
+            this.canvas = document.getElementById('gameCanvas');
+            this.ctx = this.canvas.getContext('2d');
+            this.effectContainer = document.getElementById('effect-container');
+            
+            const resize = () => {
+                const container = document.getElementById('game-container');
+                this.canvas.width = CONFIG.CANVAS_WIDTH;
+                this.canvas.height = CONFIG.CANVAS_HEIGHT;
+            };
+            window.addEventListener('resize', resize);
+            resize();
+
+            this.score = 0; this.highScore = Number(localStorage.getItem('dinoHighScore')) || 0;
+            this.gameSpeed = CONFIG.GAME_SPEED_START;
+            this.isPlaying = false; this.isGameOver = false;
+            this.isDestroyed = false; 
+            
+            this.hitStopTimer = 0;
+            this.dashGauge = 0; this.isDashing = false; this.dashTimer = 0; this.postDashInvincibilityTimer = 0;
+
+            this.bgLayer = new ScrollingLayer('bg', 0.2, 0, false);
+            this.groundLayer = new ScrollingLayer('ground', 1.0, 0, true);
+
+            this.dino = new Dino(); this.obstacles = []; this.clouds = []; this.particles = [];
+            this.soundManager = soundManager;
+            this.ui = {
+                current: document.getElementById('current-score'),
+                high: document.getElementById('high-score'),
+                start: document.getElementById('start-message'),
+                over: document.getElementById('game-over-message'),
+                gaugeFill: document.getElementById('dash-gauge'),
+                btnDash: document.getElementById('btn-dash')
+            };
+
+            this.updateHighScoreDisplay();
+            
+            this.boundHandleKeydown = this.handleKeydown.bind(this);
+            this.boundHandleTouch = this.handleTouch.bind(this);
+            this.boundHandleMouse = this.handleMouse.bind(this);
+            this.boundHandleBtnDash = (e) => { e.preventDefault(); e.stopPropagation(); this.handleInput('dash'); };
+            this.boundHandleBtnJump = (e) => { e.preventDefault(); e.stopPropagation(); this.handleInput('jump'); };
+            this.boundHandleBtnAtk = (e) => { e.preventDefault(); e.stopPropagation(); this.handleInput('attack'); };
+
+            this.bindEvents();
+            this.reset();
+
+            this.fpsInterval = 1000 / CONFIG.FPS;
+            this.then = Date.now();
+            this.drawLoop();
+        }
+
+        bindEvents() {
+            window.addEventListener('keydown', this.boundHandleKeydown);
+            this.canvas.addEventListener('touchstart', this.boundHandleTouch, { passive: false });
+            this.canvas.addEventListener('mousedown', this.boundHandleMouse);
+
+            document.getElementById('btn-dash').addEventListener('touchstart', this.boundHandleBtnDash, { passive: false });
+            document.getElementById('btn-dash').addEventListener('mousedown', this.boundHandleBtnDash);
+            
+            document.getElementById('btn-jump').addEventListener('touchstart', this.boundHandleBtnJump, { passive: false });
+            document.getElementById('btn-jump').addEventListener('mousedown', this.boundHandleBtnJump);
+            
+            document.getElementById('btn-atk').addEventListener('touchstart', this.boundHandleBtnAtk, { passive: false });
+            document.getElementById('btn-atk').addEventListener('mousedown', this.boundHandleBtnAtk);
+        }
+
+        destroy() {
+            this.isDestroyed = true;
+            window.removeEventListener('keydown', this.boundHandleKeydown);
+            this.canvas.removeEventListener('touchstart', this.boundHandleTouch);
+            this.canvas.removeEventListener('mousedown', this.boundHandleMouse);
+            
+            const removeBtn = (id, handler) => {
+                const el = document.getElementById(id);
+                el.removeEventListener('touchstart', handler);
+                el.removeEventListener('mousedown', handler);
+            };
+            removeBtn('btn-dash', this.boundHandleBtnDash);
+            removeBtn('btn-jump', this.boundHandleBtnJump);
+            removeBtn('btn-atk', this.boundHandleBtnAtk);
+        }
+
+        handleInput(action) {
+            if (!this.isPlaying && !this.isGameOver) { this.start(); return; }
+            if (this.isGameOver) return; 
+            
+            if (this.isPlaying) {
+                if (action === 'jump' && !this.isDashing) {
+                    if (this.dino.jump()) this.soundManager.playJump();
+                }
+                if (action === 'attack' && !this.isDashing) {
+                    if (this.dino.triggerHeadbutt()) this.soundManager.playHeadbuttSwing();
+                }
+                if (action === 'dash') {
+                    this.tryStartDash();
+                }
+            }
+        }
+
+        handleKeydown(e) {
+            // デフォルトのスクロール動作等を無効化
+            if (['Space', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'KeyG', 'KeyH'].includes(e.code)) e.preventDefault();
+
+            // ゲームオーバー時にスペースキーでリトライ
+            if (this.isGameOver && e.code === 'Space') {
+                retryGame();
+                return;
+            }
+
+            // ジャンプ: スペース, 上キー
+            if (e.code === 'Space' || e.code === 'ArrowUp') this.handleInput('jump');
+            // 頭突き: Hキー, 右キー
+            if (e.code === 'ArrowRight' || e.code === 'KeyH') this.handleInput('attack');
+            // ダッシュ: Gキー, 下キー
+            if (e.code === 'KeyG' || e.code === 'ArrowDown') this.handleInput('dash');
+        }
+        handleTouch(e) { e.preventDefault(); this.handleInput('jump'); }
+        handleMouse(e) { this.handleInput('jump'); }
+
+        start() { this.isPlaying = true; this.ui.start.classList.add('hidden'); }
+        reset() {
+            this.score = 0; this.gameSpeed = CONFIG.GAME_SPEED_START;
+            this.isPlaying = false; this.isGameOver = false;
+            this.dashGauge = 0; this.isDashing = false; this.dashTimer = 0; this.postDashInvincibilityTimer = 0;
+            this.dino = new Dino(); this.obstacles = []; this.clouds = []; this.particles = [];
+            this.spawnTimer = 0; this.hitStopTimer = 0;
+            
+            this.bgLayer.x = 0;
+            this.groundLayer.x = 0;
+
+            this.ui.over.classList.add('hidden'); this.effectContainer.innerHTML = '';
+            this.updateScoreDisplay(); this.updateGaugeDisplay();
+        }
+        tryStartDash() {
+            if (!this.isDashing && this.dashGauge >= CONFIG.DASH_GAUGE_MAX) {
+                this.isDashing = true; this.dashTimer = CONFIG.DASH_DURATION;
+                this.postDashInvincibilityTimer = 0; this.soundManager.playDashStart();
+            }
+        }
+        gameOver() {
+            this.isPlaying = false; this.isGameOver = true; this.dino.crashed = true;
+            this.soundManager.playGameOver(); 
+            this.ui.over.classList.remove('hidden');
+            if (this.score > this.highScore) { this.highScore = Math.floor(this.score); localStorage.setItem('dinoHighScore', this.highScore); this.updateHighScoreDisplay(); }
+        }
+        showScoreEffect(x, y, amount, isSmash = false) {
+            const el = document.createElement('div'); el.className = isSmash ? 'score-pop smash' : 'score-pop'; el.innerText = `+${amount}`;
+            const xPct = (x / this.canvas.width) * 100; const yPct = (y / this.canvas.height) * 100;
+            el.style.left = `${xPct}%`; el.style.top = `${yPct}%`;
+            this.effectContainer.appendChild(el); setTimeout(() => el.remove(), 800);
+        }
+        spawnParticles(x, y) { for (let i = 0; i < 15; i++) this.particles.push(new Particle(x, y)); }
+
+        update() {
+            if (this.hitStopTimer > 0) { this.hitStopTimer--; return; }
+            let currentSpeed = this.gameSpeed;
+            if (this.isDashing) {
+                currentSpeed *= CONFIG.DASH_SPEED_MULTIPLIER;
+                this.dashTimer--;
+                if (this.dashTimer <= 0) { this.isDashing = false; this.dashGauge = 0; this.postDashInvincibilityTimer = CONFIG.INVINCIBLE_DURATION; }
+            } else {
+                if (this.dashGauge < CONFIG.DASH_GAUGE_MAX) {
+                    const scoreIncrement = 0.1 * (this.gameSpeed / 10);
+                    this.dashGauge += scoreIncrement;
+                    if (this.dashGauge > CONFIG.DASH_GAUGE_MAX) this.dashGauge = CONFIG.DASH_GAUGE_MAX;
+                }
+            }
+            this.updateGaugeDisplay();
+            if (this.postDashInvincibilityTimer > 0) this.postDashInvincibilityTimer--;
+            if (this.gameSpeed < CONFIG.MAX_SPEED) this.gameSpeed += CONFIG.ACCELERATION;
+            
+            const scoreAdd = 0.1 * (currentSpeed / 10); this.score += scoreAdd; this.updateScoreDisplay();
+            if (Math.floor(this.score) > 0 && Math.floor(this.score) % 100 === 0 && Math.floor(this.score - scoreAdd * 2) % 100 !== 0) this.soundManager.playScore();
+
+            this.bgLayer.update(currentSpeed);
+            this.groundLayer.update(currentSpeed);
+
+            this.dino.update(this.isDashing);
+            this.particles.forEach(p => p.update()); this.particles = this.particles.filter(p => p.life > 0);
+            if (Math.random() < 0.008) this.clouds.push(new Cloud(this.canvas.width));
+            this.clouds.forEach(c => c.update()); this.clouds = this.clouds.filter(c => !c.markedForDeletion);
+
+            this.spawnTimer--;
+            if (this.spawnTimer <= 0) {
+                const type = Math.floor(Math.random() * 3);
+                this.obstacles.push(new Cactus(this.canvas.width, currentSpeed, type));
+                const minRate = CONFIG.SPAWN_RATE_MIN / (currentSpeed / CONFIG.GAME_SPEED_START);
+                const maxRate = CONFIG.SPAWN_RATE_MAX / (currentSpeed / CONFIG.GAME_SPEED_START);
+                this.spawnTimer = (Math.random() * (maxRate - minRate) + minRate);
+            }
+
+            this.obstacles.forEach(obs => {
+                obs.update(currentSpeed);
+                if (obs.isStepped || obs.markedForDeletion) return;
+                const dBox = this.dino.getBounds(); const oBox = obs.getBounds();
+                
+                if (this.isDashing) {
+                    if (dBox.x < oBox.x + oBox.width && dBox.x + dBox.width > oBox.x && dBox.y < oBox.y + oBox.height && dBox.y + dBox.height > oBox.y) {
+                         obs.markedForDeletion = true; this.soundManager.playSmash(); this.score += CONFIG.HEADBUTT_SCORE; this.updateScoreDisplay(); this.showScoreEffect(oBox.x, oBox.y, CONFIG.HEADBUTT_SCORE, true); this.spawnParticles(oBox.x + oBox.width/2, oBox.y + oBox.height/2); return;
+                    }
+                } else if (this.postDashInvincibilityTimer > 0) {
+                    if (dBox.x < oBox.x + oBox.width && dBox.x + dBox.width > oBox.x && dBox.y < oBox.y + oBox.height && dBox.y + dBox.height > oBox.y) {
+                         obs.markedForDeletion = true; this.soundManager.playSmash(); this.spawnParticles(oBox.x + oBox.width/2, oBox.y + oBox.height/2); return;
+                    }
+                }
+
+                if (this.dino.isHeadbutting && !this.isDashing) {
+                    const hBox = this.dino.getHeadbuttBounds();
+                    if (hBox) {
+                         if (hBox.x < oBox.x + oBox.width && hBox.x + hBox.width > oBox.x && hBox.y < oBox.y + oBox.height && hBox.y + hBox.height > oBox.y) {
+                             obs.markedForDeletion = true; this.soundManager.playSmash(); this.score += CONFIG.HEADBUTT_SCORE; this.updateScoreDisplay(); this.showScoreEffect(oBox.x, oBox.y, CONFIG.HEADBUTT_SCORE, true); this.spawnParticles(oBox.x + oBox.width/2, oBox.y + oBox.height/2); this.hitStopTimer = CONFIG.HIT_STOP_DURATION; this.dino.headbuttCooldown = 0; this.dino.isHeadbutting = false; this.postDashInvincibilityTimer = 0; return; 
+                         }
+                    }
+                }
+
+                if (dBox.x < oBox.x + oBox.width && dBox.x + dBox.width > oBox.x && dBox.y < oBox.y + oBox.height && dBox.y + dBox.height > oBox.y) {
+                    const stompThreshold = 25; const isFalling = this.dino.dy > 0; const hitFromTop = (dBox.y + dBox.height) < (oBox.y + stompThreshold);
+                    if (isFalling && hitFromTop) {
+                        this.dino.bounce(); obs.isStepped = true; this.score += CONFIG.STOMP_SCORE; this.updateScoreDisplay(); this.soundManager.playStomp(); this.showScoreEffect(oBox.x, oBox.y, CONFIG.STOMP_SCORE); this.postDashInvincibilityTimer = 0;
+                    } else { this.gameOver(); }
+                }
+            });
+            this.obstacles = this.obstacles.filter(o => !o.markedForDeletion);
+        }
+
+        draw() {
+            this.ctx.save();
+            if (this.isDashing) {
+                const shakeX = (Math.random() - 0.5) * 6; const shakeY = (Math.random() - 0.5) * 6; this.ctx.translate(shakeX, shakeY);
+            }
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+            this.bgLayer.draw(this.ctx, this.canvas.width, this.canvas.height);
+            this.groundLayer.draw(this.ctx, this.canvas.width, this.canvas.height);
+
+            this.clouds.forEach(c => c.draw(this.ctx));
+            this.obstacles.forEach(o => o.draw(this.ctx));
+            this.particles.forEach(p => p.draw(this.ctx));
+            if (this.postDashInvincibilityTimer > 0 && Math.floor(Date.now() / 50) % 2 === 0) this.ctx.globalAlpha = 0.5;
+            this.dino.draw(this.ctx, this.isDashing);
+            this.ctx.globalAlpha = 1.0;
+            this.ctx.restore();
+        }
+
+        updateScoreDisplay() { this.ui.current.innerText = Math.floor(this.score).toString().padStart(5, '0'); }
+        updateHighScoreDisplay() { this.ui.high.innerText = Math.floor(this.highScore).toString().padStart(5, '0'); }
+        updateGaugeDisplay() {
+            const pct = (this.dashGauge / CONFIG.DASH_GAUGE_MAX) * 100;
+            this.ui.gaugeFill.style.width = `${pct}%`;
+            if (this.dashGauge >= CONFIG.DASH_GAUGE_MAX) { this.ui.gaugeFill.classList.add('gauge-ready'); this.ui.btnDash.classList.add('active'); }
+            else { this.ui.gaugeFill.classList.remove('gauge-ready'); this.ui.btnDash.classList.remove('active'); }
+            if (this.isDashing) {
+                const remainPct = (this.dashTimer / CONFIG.DASH_DURATION) * 100;
+                this.ui.gaugeFill.style.width = `${remainPct}%`;
+                this.ui.gaugeFill.classList.add('gauge-ready');
+            }
+        }
+
+        drawLoop() {
+            if (this.isDestroyed) return;
+
+            requestAnimationFrame(() => this.drawLoop());
+
+            const now = Date.now();
+            const elapsed = now - this.then;
+
+            if (elapsed > this.fpsInterval) {
+                this.then = now - (elapsed % this.fpsInterval);
+
+                if (this.isPlaying) {
+                    this.update();
+                }
+                this.draw();
+            }
+        }
+    }
+</script>
+</body>
+</html>
