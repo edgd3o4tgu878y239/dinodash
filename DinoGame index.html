@@ -15,7 +15,9 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-image: url("https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/background-image.jpg");
+            /* 背景画像をユーザー指定のもの(2.jpg)に変更 */
+            background-image: url("https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/background-image2.jpg");
+            background-size: cover;
             background-color: #222;
             font-family: 'Press Start 2P', cursive;
             overflow: hidden;
@@ -28,7 +30,6 @@
             position: relative;
             width: 100%;
             max-width: 900px;
-            /* 高さを固定せず、内容に合わせて伸縮させる（PC版は最大高さを指定） */
             height: auto;
             max-height: 400px;
             aspect-ratio: 16/9; /* PCでの基本比率 */
@@ -43,7 +44,6 @@
             border-radius: 8px;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
-
 
         /* ▼▼▼ 画面下のリンクエリア ▼▼▼ */
         #footer-ui {
@@ -63,14 +63,14 @@
             color: #fff;
         }
 
-        /* ▼▼▼ ライセンスモーダル (画面全体) ▼▼▼ */
+        /* ▼▼▼ ライセンスモーダル ▼▼▼ */
         #license-modal {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.8);
             z-index: 2000;
-            display: none; /* 初期非表示 */
+            display: none;
             justify-content: center;
             align-items: center;
             opacity: 0;
@@ -138,7 +138,7 @@
             background: rgba(255, 255, 255, 0.9);
             border: 3px solid #333;
             border-radius: 4px;
-            z-index: 300; /* 最前面に表示 */
+            z-index: 300;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -153,7 +153,7 @@
             box-shadow: none;
         }
 
-        /* ▼▼▼ ローディング画面 (New!) ▼▼▼ */
+        /* ▼▼▼ ローディング画面 ▼▼▼ */
         #loading-layer {
             position: absolute;
             top: 0;
@@ -162,7 +162,7 @@
             height: 100%;
             background: #222;
             color: #fff;
-            z-index: 999; /* タイトルより上 */
+            z-index: 999;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -266,7 +266,7 @@
         }
         .level-btn {
             margin: 15px;
-            padding: 20px;
+            padding: 15px 20px;
             font-family: 'Press Start 2P', cursive;
             font-size: 16px;
             background: #fff;
@@ -278,11 +278,21 @@
             box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
             transition: transform 0.1s;
             z-index: 102;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .level-btn:active {
             transform: translate(2px, 2px);
             box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
             background: #eee;
+        }
+        .level-score {
+            font-size: 10px;
+            color: #666;
+            margin-top: 8px;
+            letter-spacing: 1px;
         }
 
         .menu-char {
@@ -380,7 +390,6 @@
             box-shadow: 0 0 5px #ff3333;
         }
 
-        /* コントローラー (PCでは下部に重ねて表示) */
         #controls {
             position: absolute;
             bottom: 10px;
@@ -448,7 +457,6 @@
             z-index: 15;
         }
         .score-pop.smash { color: #ff3333; font-size: 20px; }
-        /* 踏みつけ用の赤文字スタイルを追加 */
         .score-pop.stomp { color: #ff0000; font-size: 22px; font-weight: 900; text-shadow: 2px 2px 0 #fff; }
 
         @keyframes popUp {
@@ -456,7 +464,6 @@
             100% { transform: translateY(-30px); opacity: 0; }
         }
 
-        /* PC用操作ガイド */
         #pc-controls-help {
             margin-top: 20px;
             color: #888;
@@ -488,50 +495,45 @@
         /* ▼▼▼ スマートフォン向けレイアウト調整 ▼▼▼ */
         @media (max-width: 600px) {
             body {
-                /* 縦画面中央寄せ */
                 align-items: center;
                 justify-content: center;
             }
             #title-layer {
             }
             .title-img {
-            height: 70%;
+            height: 100%;
             }
             #game-container {
-                /* 画面幅いっぱいより少し小さくし、枠としての存在感を出す */
                 width: 98%;
-                /* アスペクト比を解除し、内容物で高さを決める */
                 height: 400px;
                 max-height: 600px;
-                /* 背景色でゲーム機本体感を出す */
                 background-color: #ddd;
                 padding: 10px;
                 padding-bottom: 20px;
                 border-radius: 20px;
                 box-shadow: 0 5px 15px rgba(0,0,0,0.8);
                 border: 2px solid #555;
+                background-image: url('https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/sticker1.png');
+                background-position: left 35% bottom;
+                background-repeat: no-repeat;
+                background-size: 30%;
+                
             }
 
-            /* キャンバス（ゲーム画面） */
             canvas {
                 width: 100%;
-                /* アスペクト比を固定して歪みを防ぐ (900:300 = 3:1) */
                 aspect-ratio: 3/1;
                 height: auto;
                 border: 2px solid #333;
                 border-radius: 4px;
-                background: #f0f0f0; /* 背景画像がない時のデフォルト色 */
-                margin-bottom: 20px; /* コントローラーとの隙間 */
+                background: #f0f0f0;
+                margin-bottom: 20px;
             }
 
-            /* タイトル画面などのレイヤーもCanvasエリアに合わせる */
             #title-layer, #menu-layer, #ui-layer, #loading-layer {
-                /* 親コンテナのpaddingを無視してcanvasの上に重なるように調整が必要だが、
-                   シンプルにコンテナ全体を覆う形にする */
                 border-radius: 16px; 
             }
             
-            /* コントローラー配置：Canvasの下に自然に配置 */
             #controls {
                 position: relative;
                 bottom: auto;
@@ -542,7 +544,6 @@
                 margin-top: 10px;
             }
 
-            /* ボタンサイズ調整 */
             .btn {
                 width: 65px;
                 height: 65px;
@@ -553,20 +554,16 @@
                 height: 75px;
             }
 
-            /* メニュー調整 */
             .menu-title { font-size: 16px; margin-bottom: 20px; }
             .level-btn { width: 80%; font-size: 14px; margin: 8px; padding: 12px; }
             .menu-char { width: 80px; }
             .title-text { margin-top: 10%; font-size: 14px; }
 
-            /* スマホではPC用ガイドを非表示 */
             #pc-controls-help {
                 display: none;
             }
-
-            /* ▼▼▼ 追加: スマホ時はスコア加算表示を全体的に上にずらす ▼▼▼ */
             .score-pop {
-                margin-top: -80px; /* ボタンに被らないよう上にずらす */
+                margin-top: -80px;
             }
         }
     </style>
@@ -577,7 +574,7 @@
     <!-- ミュートボタン -->
     <div id="mute-btn">🔊</div>
 
-    <!-- ローディング画面 (New!) -->
+    <!-- ローディング画面 -->
     <div id="loading-layer">
         <div class="loading-text" id="loading-text">LOADING... 0%</div>
         <div class="loading-bar-container">
@@ -586,7 +583,7 @@
     </div>
 
     <!-- タイトル画面 -->
-    <div id="title-layer" class="hidden"> <!-- 初期状態はhidden、ロード完了後に表示 -->
+    <div id="title-layer" class="hidden">
         <img id="title-img-1" class="title-img" alt="Title Logo 1" />
         <img id="title-img-2" class="title-img" alt="Title Logo 2" />
         <div class="title-ui-container">
@@ -597,16 +594,25 @@
     <!-- メニュー画面 -->
     <div id="menu-layer" class="hidden">
         <div class="menu-title">SELECT DIFFICULTY</div>
-        <div class="level-btn" onclick="selectLevel(1)">LEVEL 1</div>
-        <div class="level-btn" onclick="selectLevel(2)">LEVEL 2</div>
-        <div class="level-btn" onclick="selectLevel(3)">LEVEL 3</div>
+        <div class="level-btn" onclick="selectLevel(1)">
+            LEVEL 1
+            <span class="level-score" id="score-lv1">HI: 00000</span>
+        </div>
+        <div class="level-btn" onclick="selectLevel(2)">
+            LEVEL 2
+            <span class="level-score" id="score-lv2">HI: 00000</span>
+        </div>
+        <div class="level-btn" onclick="selectLevel(3)">
+            LEVEL 3
+            <span class="level-score" id="score-lv3">HI: 00000</span>
+        </div>
         
         <img id="menu-char-left" class="menu-char" alt="Girl">
         <img id="menu-char-right" class="menu-char" alt="Dino">
     </div>
 
     <div class="score-board hidden" id="game-ui-score">
-        <span id="level-display" style="margin-right: 15px; color: #ff3366;">LV.1</span> <!-- レベル表記追加 -->
+        <span id="level-display" style="margin-right: 15px; color: #ff3366;">LV.1</span>
         HI <span id="high-score">00000</span> <span id="current-score">00000</span>
     </div>
     <div class="gauge-container hidden" id="game-ui-gauge">
@@ -616,9 +622,7 @@
     <canvas id="gameCanvas"></canvas>
     
     <div id="ui-layer" class="hidden">
-        <!-- start-messageはイントロ演出中に表示するため、初期は非表示のままでOKだが、JSで制御する -->
         <div id="start-message" class="message hidden">TAP TO START</div>
-        
         <div id="game-over-message" class="message hidden">
             GAME OVER
             <br><br>
@@ -639,18 +643,15 @@
     </div>
 </div>
 
-<!-- PC用操作ガイド -->
 <div id="pc-controls-help">
     <div class="control-row">JUMP: <span class="key-badge">SPACE</span> / <span class="key-badge">↑</span></div>
     <div class="control-row">ATK : <span class="key-badge">H</span> / <span class="key-badge">→</span></div>
     <div class="control-row">DASH: <span class="key-badge">G</span> / <span class="key-badge">↓</span></div>
 </div>
-<!-- 画面下のリンク -->
 <div id="footer-ui">
     <a id="open-license">CREDIT</a>
 </div>
 
-<!-- ライセンスモーダル -->
 <div id="license-modal">
     <div class="license-content">
         <div class="license-header">CREDIT</div>
@@ -672,36 +673,36 @@
 </div>
 
 <script>
-    // ▼▼▼ カスタムアセット設定エリア ▼▼▼
-    // ※ ここに用意したファイルのURLを貼り付けてください。
-    // ※ 何も書かない("")場合は、デフォルトの画像や図形が使用されます。
-
-    // 【BGM】 (MP3など)
+    // ▼▼▼ カスタムアセット設定エリア (最新URL反映済み) ▼▼▼
     const CUSTOM_BGM_URL = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/DINODASHmin.mp3"; 
 
     // 【背景・環境】
-    const CUSTOM_BG     = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/background1.png"; // 遠景 (ゆっくりスクロールする背景)
-    const CUSTOM_GROUND = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/background2.png"; // 地面 (ゲーム速度でスクロールする床画像)
-    const CUSTOM_CLOUD  = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/cloud.png"; // 雲
+    const CUSTOM_BG     = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/background1.png"; 
+    const CUSTOM_GROUND = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/background2.png"; 
+    const CUSTOM_CLOUD  = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/cloud.png"; 
 
     // 【プレイヤー画像】
-    const CUSTOM_DINO_RUN_1    = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/dinorun1.png"; // 走る 1
-    const CUSTOM_DINO_RUN_2    = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/dinorun2.png"; // 走る 2
-    const CUSTOM_DINO_HEADBUTT = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/headbutt.png"; // 頭突き / ダッシュ
-    const CUSTOM_DINO_CRASH    = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/crash2.png"; // ゲームオーバー
+    const CUSTOM_DINO_RUN_1    = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/dinorun1.png"; 
+    const CUSTOM_DINO_RUN_2    = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/dinorun2.png"; 
+    const CUSTOM_DINO_HEADBUTT = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/headbutt.png"; 
+    const CUSTOM_DINO_CRASH    = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/crash2.png"; 
 
     // 【障害物画像】
-    const CUSTOM_CACTUS_1 = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/cacuts1.png"; // 小さい障害物
-    const CUSTOM_CACTUS_2 = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/cacuts2.png"; // 大きい障害物
-    const CUSTOM_CACTUS_3 = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/cacuts3.png"; // 特大障害物
+    const CUSTOM_CACTUS_1 = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/cacuts1.png"; 
+    const CUSTOM_CACTUS_2 = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/cacuts2.png"; 
+    const CUSTOM_CACTUS_3 = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/cacuts3.png"; 
 
-    // 【タイトル画像】
-    const CUSTOM_TITLE_1 = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/title1.jpg"; // 起動直後
-    const CUSTOM_TITLE_2 = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/title2.jpg"; // タップ後
+    // 【タイトル画像】(PC用)
+    const CUSTOM_TITLE_1_PC = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/titlepc1.png"; 
+    const CUSTOM_TITLE_2_PC = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/titlepc2-.png"; 
+
+    // 【タイトル画像】(スマホ用)
+    const CUSTOM_TITLE_1_SP = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/titlesp1.png"; 
+    const CUSTOM_TITLE_2_SP = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/titlesp2.png"; 
 
     // 【メニュー装飾画像】
-    const CUSTOM_MENU_LEFT  = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/menuleft.png"; // 左側のキャラ
-    const CUSTOM_MENU_RIGHT = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/menuright.png"; // 右側のキャラ
+    const CUSTOM_MENU_LEFT  = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/menuleft.png"; 
+    const CUSTOM_MENU_RIGHT = "https://raw.githubusercontent.com/edgd3o4tgu878y239/dinodash/refs/heads/main/dino-image/menuright.png"; 
     
     // ▲▲▲ カスタムアセット設定ここまで ▲▲▲
     
@@ -711,32 +712,33 @@
     const SVG_STYLE = `<style>.dino{fill:#333}.skin{fill:#fff0e0}.hair{fill:#a0a0a0}.hoodie{fill:#ff3366}.shorts{fill:#222}.eye{fill:#6600cc}.shoe{fill:#cc0000}</style>`;
     const createSvgDataUri = (content) => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>${SVG_STYLE}${content}</svg>`);
 
-    // デフォルトのアセット定義
+    // デフォルトアセット(フォールバック用)
     const DEFAULT_DINO_RUN_1 = createSvgDataUri(`<path class='dino' d='M40 16h16v12h-6v2h6v6h-4v2h-4v2h-2v4h-2v4h2v2h2v6h-4v-4h-2v-2h-2v-2h-2v6h-4v-4h-2v-4h-2v-2h-2v-2h-2v-6h2v-2h2v-2h2v-2h2v-2h2v-2h2v-4h2v-4h2v-4h6v-2h-2v-2h2v-2h8z'/><rect class='skin' x='24' y='10' width='8' height='8'/><rect class='hair' x='22' y='8' width='12' height='4'/><rect class='hair' x='22' y='8' width='2' height='10'/><rect class='hair' x='32' y='8' width='2' height='8'/><rect class='eye' x='29' y='13' width='2' height='2'/><path class='hoodie' d='M24 18h10v10h-2v2h-2v-2h-2v2h-2v-2h-2z'/><path class='hoodie' d='M20 18h4v6h-4z'/><rect class='skin' x='30' y='22' width='4' height='3'/><rect class='skin' x='28' y='28' width='4' height='6'/><rect class='shorts' x='26' y='26' width='8' height='4'/><rect class='shoe' x='28' y='34' width='5' height='3'/>`);
-    const DEFAULT_DINO_RUN_2 = createSvgDataUri(`<path class='dino' d='M40 15h16v12h-6v2h6v6h-4v2h-4v2h-2v4h-2v4h2v2h-2v4h-4v-4h-2v-4h-4v6h-4v-4h-2v-4h-2v-2h-2v-2h-2v-6h2v-2h2v-2h2v-2h2v-2h2v-4h2v-4h2v-4h6v-2h-2v-2h2v-2h8z'/><g transform='translate(0, -1)'><rect class='skin' x='24' y='10' width='8' height='8'/><rect class='hair' x='22' y='8' width='12' height='4'/><rect class='hair' x='22' y='8' width='2' height='10'/><rect class='hair' x='32' y='8' width='2' height='8'/><rect class='eye' x='29' y='13' width='2' height='2'/><path class='hoodie' d='M24 18h10v10h-2v2h-2v-2h-2v2h-2v-2h-2z'/><path class='hoodie' d='M20 18h4v6h-4z'/><rect class='skin' x='30' y='22' width='4' height='3'/><rect class='skin' x='28' y='28' width='4' height='6'/><rect class='shorts' x='26' y='26' width='8' height='4'/><rect class='shoe' x='28' y='34' width='5' height='3'/></g>`);
+    const DEFAULT_DINO_RUN_2 = createSvgDataUri(`<path class='dino' d='M40 15h16v12h-6v2h6v6h-4v2h-4v2h-2v4h-2v4h2v2h-2v4h-4v-4h-2v-4h-4v6h-4v-4h-2v-4h-2v-2h-2v-2h-2v-6h2v-2h2v-2h2v-2h2v-2h2v-2h2v-4h2v-4h2v-4h6v-2h-2v-2h2v-2h8z'/><g transform='translate(0, -1)'><rect class='skin' x='24' y='10' width='8' height='8'/><rect class='hair' x='22' y='8' width='12' height='4'/><rect class='hair' x='22' y='8' width='2' height='10'/><rect class='hair' x='32' y='8' width='2' height='8'/><rect class='eye' x='29' y='13' width='2' height='2'/><path class='hoodie' d='M24 18h10v10h-2v2h-2v-2h-2v2h-2v-2h-2z'/><path class='hoodie' d='M20 18h4v6h-4z'/><rect class='skin' x='30' y='22' width='4' height='3'/><rect class='skin' x='28' y='28' width='4' height='6'/><rect class='shorts' x='26' y='26' width='8' height='4'/><rect class='shoe' x='28' y='34' width='5' height='3'/></g>`);
     const DEFAULT_DINO_HEADBUTT = createSvgDataUri(`<g transform='translate(6, 4)'><path class='dino' d='M44 16h16v12h-6v2h6v6h-4v2h-4v2h-2v4h-2v4h2v2h2v6h-4v-4h-2v-2h-2v-2h-2v6h-4v-4h-2v-4h-2v-2h-2v-2h-2v-6h2v-2h2v-2h2v-2h2v-2h2v-2h2v-4h2v-4h2v-4h6v-2h-2v-2h2v-2h8z'/><rect fill='#fff' x='56' y='14' width='8' height='2'/><rect fill='#fff' x='58' y='18' width='6' height='2'/></g><g transform='translate(6, 4)'><rect class='skin' x='26' y='12' width='8' height='8'/><rect class='hair' x='24' y='10' width='12' height='4'/><rect class='hair' x='24' y='10' width='2' height='10'/><rect class='hair' x='34' y='10' width='2' height='8'/><rect class='eye' x='31' y='15' width='2' height='2'/><path class='hoodie' d='M26 20h10v10h-2v2h-2v-2h-2v2h-2v-2h-2z'/><path class='hoodie' d='M22 20h4v6h-4z'/><rect class='skin' x='32' y='24' width='6' height='3'/><rect class='skin' x='28' y='30' width='4' height='6'/><rect class='shorts' x='26' y='28' width='8' height='4'/><rect class='shoe' x='28' y='36' width='5' height='3'/></g>`);
-    const DEFAULT_DINO_CRASH = createSvgDataUri(`<path class='dino' d='M40 16h16v12h-6v2h6v6h-4v2h-4v2h-2v4h-2v4h2v2h2v6h-4v-4h-2v-2h-2v-2h-2v6h-4v-4h-2v-4h-2v-2h-2v-2h-2v-6h2v-2h2v-2h2v-2h2v-2h2v-4h2v-4h2v-4h6v-2h-2v-2h2v-2h8z'/><rect fill='%23fff' x='46' y='20' width='4' height='4'/><rect fill='%23333' x='47' y='21' width='2' height='2'/><g transform='translate(0, -2)'><rect class='skin' x='24' y='10' width='8' height='8'/><rect class='hair' x='22' y='6' width='12' height='6'/><rect class='hair' x='20' y='8' width='2' height='8'/><rect class='hair' x='34' y='8' width='2' height='6'/><rect class='eye' x='26' y='13' width='2' height='2'/><rect class='eye' x='30' y='13' width='2' height='2'/><rect fill='%23000' x='28' y='16' width='2' height='2'/><path class='hoodie' d='M24 18h10v10h-2v2h-2v-2h-2v2h-2v-2h-2z'/><path class='hoodie' d='M18 16h6v4h-6z'/><rect class='skin' x='16' y='14' width='3' height='4'/><rect class='skin' x='28' y='28' width='4' height='6'/><rect class='shorts' x='26' y='26' width='8' height='4'/><rect class='shoe' x='28' y='34' width='5' height='3'/></g>`);
+    const DEFAULT_DINO_CRASH = createSvgDataUri(`<path class='dino' d='M40 16h16v12h-6v2h6v6h-4v2h-4v2h-2v4h-2v4h2v2h2v6h-4v-4h-2v-2h-2v-2h-2v6h-4v-4h-2v-4h-2v-2h-2v-2h-2v-6h2v-2h2v-2h2v-2h2v-2h2v-4h2v-4h6v-2h-2v-2h2v-2h8z'/><rect fill='%23fff' x='46' y='20' width='4' height='4'/><rect fill='%23333' x='47' y='21' width='2' height='2'/><g transform='translate(0, -2)'><rect class='skin' x='24' y='10' width='8' height='8'/><rect class='hair' x='22' y='6' width='12' height='6'/><rect class='hair' x='20' y='8' width='2' height='8'/><rect class='hair' x='34' y='8' width='2' height='6'/><rect class='eye' x='26' y='13' width='2' height='2'/><rect class='eye' x='30' y='13' width='2' height='2'/><rect fill='%23000' x='28' y='16' width='2' height='2'/><path class='hoodie' d='M24 18h10v10h-2v2h-2v-2h-2v2h-2v-2h-2z'/><path class='hoodie' d='M18 16h6v4h-6z'/><rect class='skin' x='16' y='14' width='3' height='4'/><rect class='skin' x='28' y='28' width='4' height='6'/><rect class='shorts' x='26' y='26' width='8' height='4'/><rect class='shoe' x='28' y='34' width='5' height='3'/></g>`);
 
     const DEFAULT_TITLE_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'%3E%3Crect width='400' height='160' fill='%23e0e0e0'/%3E%3Ctext x='50' y='100' font-family='monospace' font-size='48' font-weight='bold' fill='%23333'%3EDINO RUN%3C/text%3E%3C/svg%3E";
     const DEFAULT_TITLE_IMG_2 = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'%3E%3Crect width='400' height='160' fill='%23ffffcc'/%3E%3Ctext x='50' y='100' font-family='monospace' font-size='48' font-weight='bold' fill='%23ff3366'%3EDINO RUN%3C/text%3E%3Cpath d='M20,120 L380,120' stroke='%23ff9900' stroke-width='8' /%3E%3C/svg%3E";
 
     const DEFAULT_MENU_LEFT = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 64 64'%3E" + SVG_STYLE + "%3Crect class='skin' x='24' y='10' width='8' height='8'/%3E%3Crect class='hair' x='22' y='8' width='12' height='4'/%3E%3Crect class='hair' x='22' y='8' width='2' height='10'/%3E%3Crect class='hair' x='32' y='8' width='2' height='8'/%3E%3Crect class='eye' x='29' y='13' width='2' height='2'/%3E%3Cpath class='hoodie' d='M24 18h10v10h-2v2h-2v-2h-2v2h-2v-2h-2z'/%3E%3Cpath class='hoodie' d='M20 18h4v6h-4z'/%3E%3Crect class='skin' x='30' y='22' width='4' height='3'/%3E%3Crect class='skin' x='28' y='28' width='4' height='6'/%3E%3Crect class='shorts' x='26' y='26' width='8' height='4'/%3E%3Crect class='shoe' x='28' y='34' width='5' height='3'/%3E%3C/svg%3E";
-    const DEFAULT_MENU_RIGHT = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 64 64'%3E" + SVG_STYLE + "%3Cpath class='dino' d='M40 16h16v12h-6v2h6v6h-4v2h-4v2h-2v4h-2v4h2v2h2v6h-4v-4h-2v-2h-2v-2h-2v6h-4v-4h-2v-4h-2v-2h-2v-2h-2v-6h2v-2h2v-2h2v-2h2v-2h2v-4h2v-4h2v-4h6v-2h-2v-2h2v-2h8z'/%3E%3C/svg%3E";
+    const DEFAULT_MENU_RIGHT = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 64 64'%3E" + SVG_STYLE + "%3Cpath class='dino' d='M40 16h16v12h-6v2h6v6h-4v2h-4v2h-2v4h-2v4h2v2h2v6h-4v-4h-2v-2h-2v-2h-2v6h-4v-4h-2v-4h-2v-2h-2v-2h-2v-6h2v-2h2v-2h2v-2h2v-2h2v-2h2v-4h2v-4h6v-2h-2v-2h2v-2h8z'/%3E%3C/svg%3E";
 
-    // アセット定義
     const IMG_DINO_RUN_1 = CUSTOM_DINO_RUN_1 || DEFAULT_DINO_RUN_1;
     const IMG_DINO_RUN_2 = CUSTOM_DINO_RUN_2 || DEFAULT_DINO_RUN_2;
     const IMG_DINO_HEADBUTT = CUSTOM_DINO_HEADBUTT || DEFAULT_DINO_HEADBUTT;
     const IMG_DINO_CRASH = CUSTOM_DINO_CRASH || DEFAULT_DINO_CRASH;
-    const TITLE_IMG_SRC = CUSTOM_TITLE_1 || DEFAULT_TITLE_IMG;
-    const TITLE_IMG_SRC_2 = CUSTOM_TITLE_2 || DEFAULT_TITLE_IMG_2;
+
+    const isMobile = window.matchMedia('(max-width: 600px)').matches;
+    const TITLE_IMG_SRC = (isMobile && CUSTOM_TITLE_1_SP) ? CUSTOM_TITLE_1_SP : (CUSTOM_TITLE_1_PC || DEFAULT_TITLE_IMG);
+    const TITLE_IMG_SRC_2 = (isMobile && CUSTOM_TITLE_2_SP) ? CUSTOM_TITLE_2_SP : (CUSTOM_TITLE_2_PC || DEFAULT_TITLE_IMG_2);
+
     const MENU_CHAR_LEFT = CUSTOM_MENU_LEFT || DEFAULT_MENU_LEFT;
     const MENU_CHAR_RIGHT = CUSTOM_MENU_RIGHT || DEFAULT_MENU_RIGHT;
     const BGM_SRC = CUSTOM_BGM_URL;
 
 
-    // ▼▼▼ AssetLoader (New!) ▼▼▼
-    // 全アセット（画像、音声）を事前に読み込み、完了を待つクラス
+    // ▼▼▼ AssetLoader ▼▼▼
     class AssetLoader {
         constructor() {
             this.assets = [];
@@ -746,7 +748,6 @@
             this.loadedAudio = {};
         }
 
-        // 読み込むリソースを登録
         add(key, src, type = 'image') {
             if (src) {
                 this.assets.push({ key, src, type });
@@ -770,13 +771,11 @@
                     };
                     img.onerror = () => {
                         console.warn(`Failed to load image: ${asset.src}`);
-                        // エラーでも進行させる（フォールバック用）
                         this.tick(onProgress, onComplete);
                     };
                     img.src = asset.src;
                 } else if (asset.type === 'audio') {
                     const audio = new Audio();
-                    // canplaythrough: 再生可能になった時点で完了とみなす
                     const onAudioLoaded = () => {
                         this.loadedAudio[asset.key] = audio;
                         audio.removeEventListener('canplaythrough', onAudioLoaded);
@@ -810,7 +809,7 @@
     }
 
 
-    // ▼▼▼ 音声管理クラス (改修版) ▼▼▼
+    // ▼▼▼ 音声管理クラス (スマホ対策強化版) ▼▼▼
     class SoundManager {
         constructor() {
             this.ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -819,19 +818,15 @@
             this.bgmInterval = null;
             this.isMuted = false;
 
-            // ★追加: ミュートボタンへのイベントリスナー設定
             const btn = document.getElementById('mute-btn');
             if (btn) {
-                // スマホでの反応を良くするため touchstart も検討できますが、
-                // click と競合しないよう注意が必要なため、まずは click のみで実装します。
                 btn.onclick = (e) => {
-                    e.stopPropagation(); // ゲーム画面のクリック判定を防止
+                    e.stopPropagation();
                     this.toggleMute();
                 };
             }
         }
 
-        // AssetLoaderで読み込んだAudioオブジェクトをセットする
         setPreloadedBgm(audioObj) {
             if (audioObj) {
                 this.bgm = audioObj;
@@ -840,7 +835,26 @@
             }
         }
         
-        // ... (以下、既存メソッドと同じですがBGM初期化ロジックを除外) ...
+        // ★修正点: コンテキストを確実に「温める」処理
+        // タップ直後にこれを呼ぶことで、以降のオーディオ再生を許可させる
+        warmUp() {
+            if (this.ctx.state === 'suspended') {
+                this.ctx.resume().catch(e => console.log(e));
+            }
+            // 無音のオシレーターを一瞬鳴らす
+            try {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                gain.gain.value = 0; // 無音
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(0);
+                osc.stop(0.01);
+            } catch(e) {
+                // エラーは無視
+            }
+        }
+
         toggleMute() {
             this.isMuted = !this.isMuted;
             const btn = document.getElementById('mute-btn');
@@ -853,19 +867,33 @@
                 btn.innerText = "🔊";
                 btn.style.background = "rgba(255, 255, 255, 0.9)";
                 if (typeof titlePhase !== 'undefined' && titlePhase > 0) {
-                    this.resumeContext().then(() => { this.playBgm(); });
+                    this.warmUp(); // 解除時も温める
+                    this.playBgm();
                 }
             }
         }
+        
         resumeContext() {
             if (this.ctx.state === 'suspended') return this.ctx.resume();
             return Promise.resolve();
         }
+
         playBgm() {
             if (this.isMuted) return;
             if (this.bgm) {
+                // 念のためもう一度resumeを試みる
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                
                 this.bgm.currentTime = 0;
-                this.bgm.play().catch(e => console.log('BGM play failed:', e));
+                // Promiseのエラーハンドリングをして、失敗したらリトライなどを考慮する
+                const p = this.bgm.play();
+                if (p !== undefined) {
+                    p.catch(error => {
+                        console.log('BGM play failed (Autoplay policy?):', error);
+                        // 失敗した場合でも、次のユーザー操作で鳴るようにフラグなどを立てる手もあるが
+                        // ここではコンソール出力にとどめる
+                    });
+                }
             } else {
                 this.startSimpleBgm();
             }
@@ -897,7 +925,9 @@
         }
         playTone(type, freq, duration, slide = 0, vol = 0.1) {
             if (!this.enabled || this.isMuted) return;
+            // 演奏時もこまめにresume確認
             if(this.ctx.state === 'suspended') this.ctx.resume().catch(()=>{});
+            
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
             osc.type = type;
@@ -955,7 +985,6 @@
 
     const soundManager = new SoundManager();
 
-    // ▼▼▼ 設定値 (初期値) ▼▼▼
     const CONFIG = {
         CANVAS_WIDTH: 900,
         CANVAS_HEIGHT: 300,
@@ -969,7 +998,6 @@
         SPAWN_RATE_MIN: 100,
         SPAWN_RATE_MAX: 220,
         DINO_X: 60,
-        // スコアを入れ替え: 踏みつけ20点、頭突き10点
         STOMP_SCORE: 20,
         HEADBUTT_SCORE: 10, 
         HEADBUTT_DURATION: 6,
@@ -981,7 +1009,7 @@
         INVINCIBLE_DURATION: 60,
         SCORE_MULTIPLIER: 1.0,
         FPS: 60,
-        INTRO_SPEED: 8 // イントロ時のスライド速度
+        INTRO_SPEED: 8
     };
 
     const LEVELS = {
@@ -992,16 +1020,13 @@
 
     let gameInstance = null;
     let titlePhase = 0; 
-    let currentLevel = 1; // 現在のレベルを保持
+    let currentLevel = 1;
 
-    // SpriteManager: AssetLoaderで読み込んだ画像を受け取れるように改修
     class SpriteManager {
         constructor() { this.images = {}; }
-        // プリロード済みの画像オブジェクトを直接セット
         setImage(key, imgObj) {
             this.images[key] = imgObj;
         }
-        // フォールバック用（ローダーを使わない場合の従来のメソッド）
         load(key, src) { 
             if (!src) return;
             const img = new Image(); 
@@ -1012,7 +1037,6 @@
     }
     const sprites = new SpriteManager();
 
-    // DOM要素
     const titleImg1 = document.getElementById('title-img-1');
     const titleImg2 = document.getElementById('title-img-2');
     const titleTextEl = document.getElementById('title-text-el');
@@ -1022,12 +1046,9 @@
     const titleLayer = document.getElementById('title-layer');
 
 
-    // ▼▼▼ 初期化・プリロード処理 ▼▼▼
     window.onload = () => {
-        // 1. AssetLoaderのセットアップ
         const loader = new AssetLoader();
         
-        // 画像登録
         loader.add('dino_run_1', IMG_DINO_RUN_1);
         loader.add('dino_run_2', IMG_DINO_RUN_2);
         loader.add('dino_headbutt', IMG_DINO_HEADBUTT);
@@ -1043,41 +1064,32 @@
         loader.add('menu_left', MENU_CHAR_LEFT);
         loader.add('menu_right', MENU_CHAR_RIGHT);
 
-        // BGM登録 (CUSTOM_BGM_URLがある場合のみ)
-        if (BGM_SRC && BGM_SRC.length > 5) { // dataURI等も考慮
+        if (BGM_SRC && BGM_SRC.length > 5) {
             loader.add('bgm', BGM_SRC, 'audio');
         }
 
-        // 2. 読み込み開始
         loader.start(
             (percent) => {
-                // 進捗更新
                 loadingText.innerText = `LOADING... ${percent}%`;
                 loadingBar.style.width = `${percent}%`;
             },
             () => {
-                // 3. 完了時の処理
-                // 読み込んだ画像をSpriteManagerへ転送
                 for (const key in loader.loadedImages) {
                     sprites.setImage(key, loader.loadedImages[key]);
                 }
                 
-                // タイトル画像などをDOMに反映 (読み込み済みキャッシュから即座に表示される)
                 titleImg1.src = TITLE_IMG_SRC;
                 titleImg2.src = TITLE_IMG_SRC_2;
                 document.getElementById('menu-char-left').src = MENU_CHAR_LEFT;
                 document.getElementById('menu-char-right').src = MENU_CHAR_RIGHT;
 
-                // BGMをSoundManagerへ
                 if (loader.loadedAudio['bgm']) {
                     soundManager.setPreloadedBgm(loader.loadedAudio['bgm']);
                 } else if (BGM_SRC) {
-                     // フォールバック(Loader失敗時など)
                      const audio = new Audio(BGM_SRC);
                      soundManager.setPreloadedBgm(audio);
                 }
 
-                // ローディング画面を消してタイトルを表示
                 setTimeout(() => {
                     loadingLayer.style.opacity = 0;
                     setTimeout(() => {
@@ -1085,14 +1097,26 @@
                         titleLayer.classList.remove('hidden');
                     }, 500);
                 }, 200);
+                
+                updateMenuHighScores();
             }
         );
     };
+
+    function updateMenuHighScores() {
+        for(let i=1; i<=3; i++) {
+            const score = Number(localStorage.getItem(`dinoHighScore_Level${i}`)) || 0;
+            const el = document.getElementById(`score-lv${i}`);
+            if(el) el.innerText = `HI: ${score.toString().padStart(5, '0')}`;
+        }
+    }
 
     function showMenu() {
         const menu = document.getElementById('menu-layer');
         const charL = document.getElementById('menu-char-left');
         const charR = document.getElementById('menu-char-right');
+
+        updateMenuHighScores();
 
         charL.classList.remove('slide-in-up', 'slide-out-down');
         charR.classList.remove('slide-in-up-right', 'slide-out-down-right');
@@ -1120,7 +1144,6 @@
         }, 300);
     }
 
-    // ▼▼▼ ライセンス表示ロジック ▼▼▼
     const openLicense = document.getElementById('open-license');
     const licenseModal = document.getElementById('license-modal');
     const licenseClose = document.getElementById('license-close');
@@ -1129,33 +1152,31 @@
     licenseClose.onclick = () => { licenseModal.classList.remove('active'); setTimeout(() => licenseModal.style.display = "none", 300); };
     licenseModal.onclick = (e) => { if (e.target === licenseModal) licenseClose.onclick(); };
 
-    // タイトル画面のインタラクション制御
+    // ▼▼▼ タイトル操作ロジック修正 ▼▼▼
     function handleTitleInteraction() {
         if (titleLayer.classList.contains('hidden')) return;
 
-        // Phase 0 -> Phase 1: BGM開始 & 画像スライド (1が右へ、2が左から中央へ)
+        // Phase 0 -> Phase 1
         if (titlePhase === 0) {
-            soundManager.resumeContext();
+            // ★変更点: ここで強力にWarmUpをかける
+            soundManager.warmUp();
             soundManager.playSelect();
-            soundManager.playBgm();
+            soundManager.playBgm(); // 即座にBGM再生指示
             
-            // スライドアニメーション
-            titleImg1.style.transform = 'translateX(100%)'; // 右へ退場
-            titleImg2.style.transform = 'translateX(0)';    // 左から入場
+            titleImg1.style.transform = 'translateX(100%)';
+            titleImg2.style.transform = 'translateX(0)';
             
             titleTextEl.innerText = "TAP TO MENU";
             titleTextEl.style.color = "#ff3366";
             
             titlePhase = 1;
         } 
-        // Phase 1 -> Phase 2: メニューへ遷移 (2が右へ)
+        // Phase 1 -> Phase 2
         else if (titlePhase === 1) {
-            soundManager.resumeContext();
+            soundManager.resumeContext(); // ここでも念押し
             soundManager.playDashStart(); 
             
-            // 画像2を右へスライドアウト
             titleImg2.style.transform = 'translateX(100%)';
-            // テキストもフェードアウトっぽく
             titleTextEl.style.opacity = '0';
 
             setTimeout(() => {
@@ -1194,7 +1215,6 @@
         CONFIG.SPAWN_RATE_MAX = setting.SPAWN_MAX;
         CONFIG.SCORE_MULTIPLIER = setting.SCORE_MULT;
         
-        // 重力などはCONFIG初期値(PC基準)のまま固定
         CONFIG.GRAVITY = 1.6;
         CONFIG.JUMP_FORCE = -22;
 
@@ -1203,10 +1223,7 @@
         document.getElementById('game-ui-gauge').classList.remove('hidden');
         document.getElementById('controls').classList.remove('hidden');
         
-        // start-message はゲームインスタンス側で表示制御する
         document.getElementById('game-over-message').classList.add('hidden');
-
-        // レベル表示更新
         document.getElementById('level-display').innerText = `LV.${level}`;
 
         gameInstance = new Game();
@@ -1228,16 +1245,13 @@
     function retryGame() {
         if (gameInstance) {
             gameInstance.reset();
-            // リトライ時もイントロ演出を入れるため start は明示的に呼ばず、reset 内の状態遷移に任せる
-            // gameInstance.start(); 
         }
     }
 
-    // ▼ 新クラス: 無限スクロールする背景/地面レイヤー ▼
     class ScrollingLayer {
         constructor(imgKey, speedFactor, yOffset = 0, isGround = false) {
             this.imgKey = imgKey;
-            this.speedFactor = speedFactor; // 1.0 = ゲームスピードと同じ、0.2 = ゆっくり（遠景）
+            this.speedFactor = speedFactor;
             this.x = 0;
             this.yOffset = yOffset;
             this.isGround = isGround;
@@ -1305,30 +1319,27 @@
     class Dino {
         constructor() {
             this.width = 80; this.height = 80;
-            // 初期位置は画面左外
             this.x = -100;
-            this.targetX = CONFIG.DINO_X; // 本来の定位置
+            this.targetX = CONFIG.DINO_X;
             this.y = CONFIG.GROUND_Y - this.height;
             this.dy = 0; this.jumpPower = CONFIG.JUMP_FORCE;
             this.grounded = true; this.crashed = false;
             this.timer = 0; this.legFrame = 0;
             this.isHeadbutting = false; this.headbuttTimer = 0; this.headbuttCooldown = 0;
             this.trail = []; 
-            this.introPhase = true; // イントロ演出中フラグ
+            this.introPhase = true; 
         }
         
-        // イントロ用の更新処理
         updateIntro() {
             if (this.x < this.targetX) {
                 this.x += CONFIG.INTRO_SPEED;
-                // 足踏みアニメーションさせる
                 this.timer++; 
                 if (this.timer > 4) { this.legFrame = !this.legFrame; this.timer = 0; }
                 
                 if (this.x >= this.targetX) {
                     this.x = this.targetX;
                     this.introPhase = false;
-                    return true; // イントロ終了
+                    return true;
                 }
             }
             return false;
@@ -1373,9 +1384,15 @@
                 });
             }
             let imgKey = 'dino_run_1';
-            if (isDashing || this.isHeadbutting) imgKey = 'dino_headbutt';
-            else if (this.crashed) imgKey = 'dino_crash';
-            else if (this.legFrame) imgKey = 'dino_run_2';
+            
+            if (this.crashed) {
+                imgKey = 'dino_crash';
+            } else if (isDashing || this.isHeadbutting) {
+                imgKey = 'dino_headbutt';
+            } else if (this.legFrame) {
+                imgKey = 'dino_run_2';
+            }
+
             const img = sprites.get(imgKey);
             if (this.headbuttCooldown > 0 && !this.isHeadbutting && !isDashing) ctx.globalAlpha = 0.7; else ctx.globalAlpha = 1.0;
             if (img && img.complete && img.naturalWidth !== 0) ctx.drawImage(img, this.x, this.y, this.width, this.height);
@@ -1407,7 +1424,6 @@
             
             const img = sprites.get(imgKey);
 
-            // ★ 視認性向上のためのエフェクト: 白い縁取り（発光）効果
             ctx.save();
             ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
             ctx.shadowBlur = 8;
@@ -1418,7 +1434,6 @@
                 if (this.isStepped) {
                     ctx.globalAlpha = 0.5;
                     ctx.translate(0, 20);
-                    // 踏まれた後は発光を消す
                     ctx.shadowBlur = 0;
                 }
                 ctx.drawImage(img, this.x, this.y, this.width, this.height);
@@ -1463,7 +1478,8 @@
             window.addEventListener('resize', resize);
             resize();
 
-            this.score = 0; this.highScore = Number(localStorage.getItem('dinoHighScore')) || 0;
+            this.score = 0; 
+            this.highScore = Number(localStorage.getItem(`dinoHighScore_Level${currentLevel}`)) || 0;
             this.gameSpeed = CONFIG.GAME_SPEED_START;
             this.isPlaying = false; this.isGameOver = false;
             this.isDestroyed = false; 
@@ -1534,7 +1550,6 @@
         }
 
         handleInput(action) {
-            // イントロ中は入力を受け付けない
             if (this.dino.introPhase) return;
 
             if (!this.isPlaying && !this.isGameOver) { this.start(); return; }
@@ -1554,20 +1569,15 @@
         }
 
         handleKeydown(e) {
-            // デフォルトのスクロール動作等を無効化
             if (['Space', 'ArrowUp', 'ArrowRight', 'ArrowDown', 'KeyG', 'KeyH'].includes(e.code)) e.preventDefault();
 
-            // ゲームオーバー時にスペースキーでリトライ
             if (this.isGameOver && e.code === 'Space') {
                 retryGame();
                 return;
             }
 
-            // ジャンプ: スペース, 上キー
             if (e.code === 'Space' || e.code === 'ArrowUp') this.handleInput('jump');
-            // 頭突き: Hキー, 右キー
             if (e.code === 'ArrowRight' || e.code === 'KeyH') this.handleInput('attack');
-            // ダッシュ: Gキー, 下キー
             if (e.code === 'KeyG' || e.code === 'ArrowDown') this.handleInput('dash');
         }
         handleTouch(e) { e.preventDefault(); this.handleInput('jump'); }
@@ -1576,10 +1586,10 @@
         start() { this.isPlaying = true; this.ui.start.classList.add('hidden'); }
         reset() {
             this.score = 0; this.gameSpeed = CONFIG.GAME_SPEED_START;
-            this.isPlaying = true; // reset直後からUpdateを回す（イントロアニメ用）
+            this.isPlaying = true; 
             this.isGameOver = false;
             this.dashGauge = 0; this.isDashing = false; this.dashTimer = 0; this.postDashInvincibilityTimer = 0;
-            this.dino = new Dino(); // ここでintroPhase = trueになる
+            this.dino = new Dino(); 
             this.obstacles = []; this.clouds = []; this.particles = [];
             this.spawnTimer = 0; this.hitStopTimer = 0;
             
@@ -1587,7 +1597,7 @@
             this.groundLayer.x = 0;
 
             this.ui.over.classList.add('hidden'); 
-            this.ui.start.classList.add('hidden'); // TAP TO STARTは消しておく（イントロ後に表示も可だが自動開始の流れにする）
+            this.ui.start.classList.add('hidden'); 
             this.effectContainer.innerHTML = '';
             this.updateScoreDisplay(); this.updateGaugeDisplay();
         }
@@ -1601,14 +1611,16 @@
             this.isPlaying = false; this.isGameOver = true; this.dino.crashed = true;
             this.soundManager.playGameOver(); 
             this.ui.over.classList.remove('hidden');
-            if (this.score > this.highScore) { this.highScore = Math.floor(this.score); localStorage.setItem('dinoHighScore', this.highScore); this.updateHighScoreDisplay(); }
+            if (this.score > this.highScore) { 
+                this.highScore = Math.floor(this.score); 
+                localStorage.setItem(`dinoHighScore_Level${currentLevel}`, this.highScore); 
+                this.updateHighScoreDisplay(); 
+            }
         }
-        // showScoreEffectを拡張して、スタイルクラスを受け取れるように変更
         showScoreEffect(x, y, amount, type = 'normal') {
             const el = document.createElement('div');
             el.innerText = `+${amount}`;
             
-            // タイプに応じてクラスを付与
             if (type === 'smash') {
                 el.className = 'score-pop smash';
             } else if (type === 'stomp') {
@@ -1623,24 +1635,18 @@
         }
         spawnParticles(x, y) { for (let i = 0; i < 15; i++) this.particles.push(new Particle(x, y)); }
 
-        // ★追加: パーティクルなどのエフェクト更新用（ゲームオーバー時も動かす）
         updateEffects() {
             this.particles.forEach(p => p.update());
             this.particles = this.particles.filter(p => p.life > 0);
         }
 
         update() {
-            // ★イントロ処理
             if (this.dino.introPhase) {
                 const finished = this.dino.updateIntro();
-                // イントロ中は背景と障害物を動かさないため、ここでreturnする
-                // ゲームループ(drawLoop)は回り続けるので描画はされる
                 if (!finished) {
                     return;
                 } else {
-                    // イントロ終了、ゲーム本編開始
                     this.dino.introPhase = false;
-                    // ここでreturnせず下へ進み、通常アップデートを1フレーム目から開始する
                 }
             }
 
@@ -1688,7 +1694,6 @@
                 
                 if (this.isDashing) {
                     if (dBox.x < oBox.x + oBox.width && dBox.x + dBox.width > oBox.x && dBox.y < oBox.y + oBox.height && dBox.y + dBox.height > oBox.y) {
-                         // ダッシュ破壊（頭突き扱い）: 10点、smash演出
                          obs.markedForDeletion = true; this.soundManager.playSmash(); this.score += CONFIG.HEADBUTT_SCORE; this.updateScoreDisplay(); 
                          this.showScoreEffect(oBox.x, oBox.y, CONFIG.HEADBUTT_SCORE, 'smash'); 
                          this.spawnParticles(oBox.x + oBox.width/2, oBox.y + oBox.height/2); return;
@@ -1703,7 +1708,6 @@
                     const hBox = this.dino.getHeadbuttBounds();
                     if (hBox) {
                          if (hBox.x < oBox.x + oBox.width && hBox.x + hBox.width > oBox.x && hBox.y < oBox.y + oBox.height && hBox.y + hBox.height > oBox.y) {
-                             // 通常頭突き破壊: 10点、smash演出
                              obs.markedForDeletion = true; this.soundManager.playSmash(); this.score += CONFIG.HEADBUTT_SCORE; this.updateScoreDisplay(); 
                              this.showScoreEffect(oBox.x, oBox.y, CONFIG.HEADBUTT_SCORE, 'smash'); 
                              this.spawnParticles(oBox.x + oBox.width/2, oBox.y + oBox.height/2); this.hitStopTimer = CONFIG.HIT_STOP_DURATION; this.dino.headbuttCooldown = 0; this.dino.isHeadbutting = false; this.postDashInvincibilityTimer = 0; return; 
@@ -1714,12 +1718,10 @@
                 if (dBox.x < oBox.x + oBox.width && dBox.x + dBox.width > oBox.x && dBox.y < oBox.y + oBox.height && dBox.y + dBox.height > oBox.y) {
                     const stompThreshold = 25; const isFalling = this.dino.dy > 0; const hitFromTop = (dBox.y + dBox.height) < (oBox.y + stompThreshold);
                     if (isFalling && hitFromTop) {
-                        // 踏みつけ成功: 20点、stomp演出（赤文字）
                         this.dino.bounce(); obs.isStepped = true; this.score += CONFIG.STOMP_SCORE; this.updateScoreDisplay(); this.soundManager.playStomp(); 
                         this.showScoreEffect(oBox.x, oBox.y, CONFIG.STOMP_SCORE, 'stomp'); 
                         this.postDashInvincibilityTimer = 0;
                     } else { 
-                        // ★ゲームオーバー確定時にプレイヤーからもパーティクルを出す
                         this.spawnParticles(this.dino.x + this.dino.width / 2, this.dino.y + this.dino.height / 2);
                         this.gameOver(); 
                     }
@@ -1745,7 +1747,6 @@
             this.dino.draw(this.ctx, this.isDashing);
             this.ctx.globalAlpha = 1.0;
 
-            // ★追加: キャラクターより手前にパーティクルを描画
             this.particles.forEach(p => p.draw(this.ctx));
 
             this.ctx.restore();
@@ -1776,10 +1777,8 @@
             if (elapsed > this.fpsInterval) {
                 this.then = now - (elapsed % this.fpsInterval);
 
-                // ★追加: エフェクトはゲームの進行(isPlaying)に関わらず常に更新する
                 this.updateEffects();
 
-                // イントロ中もupdateを呼ぶために条件を変更
                 if (this.isPlaying || (this.dino && this.dino.introPhase)) {
                     this.update();
                 }
