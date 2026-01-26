@@ -152,7 +152,7 @@
             border: 3px solid #333;
             border-radius: 4px;
             z-index: 300;
-            display: flex;
+            display: none;
             justify-content: center;
             align-items: center;
             font-size: 20px;
@@ -591,6 +591,9 @@
         <img id="title-img-2" class="title-img" alt="Title Logo 2" />
         <div class="title-ui-container">
             <div id="title-text-el" class="title-text">PRESS START</div>
+            <div id="bgm-notice" style="color: #666; font-size: 8px; margin-top: 10px; font-family: sans-serif;background-color:#fff;">
+            ※BGMが流れます
+        </div>
         </div>
     </div>
 
@@ -807,16 +810,18 @@
             this.enabled = true;
             this.bgm = null;
             this.bgmInterval = null;
-            this.isMuted = false;
+            this.isMuted = true;
 
             const btn = document.getElementById('mute-btn');
-            if (btn) {
-                btn.onclick = (e) => {
-                    e.stopPropagation();
-                    this.toggleMute();
-                };
-            }
+        if (btn) {
+            btn.innerText = "🔇"; // ★初期アイコンを消音に
+            btn.style.background = "rgba(200, 200, 200, 0.9)";
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                this.toggleMute();
+            };
         }
+    }
 
         setPreloadedBgm(audioObj) {
             if (audioObj) {
@@ -982,7 +987,7 @@
         STOMP_SCORE: 20,
         HEADBUTT_SCORE: 10, 
         PTERA_SCORE: 100, 
-        HEADBUTT_DURATION: 6,
+        HEADBUTT_DURATION: 8,
         HEADBUTT_COOLDOWN: 50, 
         HIT_STOP_DURATION: 8,
         DASH_GAUGE_MAX: 150,
@@ -1137,34 +1142,49 @@
     licenseModal.onclick = (e) => { if (e.target === licenseModal) licenseClose.onclick(); };
 
     function handleTitleInteraction() {
-        if (titleLayer.classList.contains('hidden')) return;
+    if (titleLayer.classList.contains('hidden')) return;
 
-        if (titlePhase === 0) {
-            soundManager.warmUp();
-            soundManager.playSelect();
-            soundManager.playBgm();
-            
-            titleImg1.style.transform = 'translateX(100%)';
-            titleImg2.style.transform = 'translateX(0)';
-            
-            titleTextEl.innerText = "TAP TO MENU";
-            titleTextEl.style.color = "#ff3366";
-            
-            titlePhase = 1;
-        } 
-        else if (titlePhase === 1) {
-            soundManager.resumeContext();
-            soundManager.playDashStart(); 
-            
-            titleImg2.style.transform = 'translateX(100%)';
-            titleTextEl.style.opacity = '0';
-
-            setTimeout(() => {
-                titleLayer.classList.add('hidden');
-                showMenu();
-            }, 350);
+    if (titlePhase === 0) {
+        // --- ★ここからBGM有効化の処理 ---
+        soundManager.isMuted = false; // ミュート解除
+        const muteBtn = document.getElementById('mute-btn');
+        if (muteBtn) {
+            muteBtn.style.display = 'flex'; // ボタンを表示
+            muteBtn.innerText = "🔊"; // アイコンをONに
+            muteBtn.style.background = "rgba(255, 255, 255, 0.9)";
         }
+        
+        // 注意書きを消す
+        const notice = document.getElementById('bgm-notice');
+        if (notice) notice.style.display = 'none';
+        
+        soundManager.warmUp();
+        soundManager.playSelect();
+        soundManager.playBgm(); // ここで再生開始
+        // --- ★ここまで ---
+
+        titleImg1.style.transform = 'translateX(100%)';
+        titleImg2.style.transform = 'translateX(0)';
+        
+        titleTextEl.innerText = "TAP TO MENU";
+        titleTextEl.style.color = "#ff3366";
+        
+        titlePhase = 1;
+    } 
+    else if (titlePhase === 1) {
+        // (省略：既存のメニュー遷移処理)
+        soundManager.resumeContext();
+        soundManager.playDashStart(); 
+        
+        titleImg2.style.transform = 'translateX(100%)';
+        titleTextEl.style.opacity = '0';
+
+        setTimeout(() => {
+            titleLayer.classList.add('hidden');
+            showMenu();
+        }, 350);
     }
+}
 
     titleLayer.addEventListener('click', handleTitleInteraction);
     titleLayer.addEventListener('touchstart', (e) => { e.preventDefault(); handleTitleInteraction(); }, {passive: false});
@@ -1296,7 +1316,7 @@
         }
     }
 
-    class Dino {
+class Dino {
         constructor() {
             this.width = 60; this.height = 80;
             this.x = -100;
@@ -1306,6 +1326,7 @@
             this.grounded = true; this.crashed = false;
             this.timer = 0; this.legFrame = 0;
             this.isHeadbutting = false; this.headbuttTimer = 0; this.headbuttCooldown = 0;
+            this.xOffset = 0; // 踏み込み用のオフセット
             this.trail = []; 
             this.introPhase = true; 
         }
@@ -1331,6 +1352,7 @@
             }
             return false;
         }
+
         triggerHeadbutt() {
             if (!this.headbuttCooldown && !this.isHeadbutting && !this.crashed && !this.introPhase) {
                 this.isHeadbutting = true;
@@ -1340,19 +1362,46 @@
             }
             return false;
         }
+
         bounce() { this.dy = CONFIG.BOUNCE_FORCE; this.grounded = false; }
+
         update(isDashing) {
             this.dy += CONFIG.GRAVITY; this.y += this.dy;
-            if (this.y > CONFIG.GROUND_Y - this.height) { this.y = CONFIG.GROUND_Y - this.height; this.dy = 0; this.grounded = true; } else { this.grounded = false; }
+            if (this.y > CONFIG.GROUND_Y - this.height) { 
+                this.y = CONFIG.GROUND_Y - this.height; this.dy = 0; this.grounded = true; 
+            } else { 
+                this.grounded = false; 
+            }
+
+            // 頭突き中の踏み込みロジック
+            if (this.isHeadbutting) {
+                this.headbuttTimer--;
+                if (this.headbuttTimer > CONFIG.HEADBUTT_DURATION / 2) {
+                    this.xOffset += 8; // 前方へ突き出し
+                } else {
+                    this.xOffset -= 8; // 元の位置へ戻る
+                }
+                if (this.headbuttTimer <= 0) {
+                    this.isHeadbutting = false;
+                    this.xOffset = 0; 
+                }
+            }
+
             if (isDashing) {
-                this.trail.push({ x: this.x, y: this.y, imgKey: 'dino_headbutt', alpha: 0.6 });
+                // 残像にもオフセットを適用
+                this.trail.push({ x: this.x + this.xOffset, y: this.y, imgKey: 'dino_headbutt', alpha: 0.6 });
                 if (this.trail.length > 5) this.trail.shift();
-            } else { this.trail = []; }
-            if (this.isHeadbutting) { this.headbuttTimer--; if (this.headbuttTimer <= 0) this.isHeadbutting = false; }
+            } else { 
+                this.trail = []; 
+            }
+
             if (this.headbuttCooldown > 0) this.headbuttCooldown--;
-            this.timer++; if (this.timer > 6) { this.legFrame = !this.legFrame; this.timer = 0; }
-        }
+            this.timer++; 
+            if (this.timer > 6) { this.legFrame = !this.legFrame; this.timer = 0; }
+        } 
         draw(ctx, isDashing) {
+            const drawX = this.x + this.xOffset;
+
             if (isDashing) {
                 this.trail.forEach((t, i) => {
                     const img = sprites.get(t.imgKey);
@@ -1363,8 +1412,16 @@
                     }
                 });
             }
+
+            ctx.save();
+            // 前傾姿勢の回転演出
+            if (this.isHeadbutting) {
+                ctx.translate(drawX + this.width / 2, this.y + this.height / 2);
+                ctx.rotate(15 * Math.PI / 180); // 15度回転 
+                ctx.translate(-(drawX + this.width / 2), -(this.y + this.height / 2));
+            }
+
             let imgKey = 'dino_run_1';
-            
             if (this.crashed) {
                 imgKey = 'dino_crash';
             } else if (isDashing || this.isHeadbutting) {
@@ -1374,15 +1431,53 @@
             }
 
             const img = sprites.get(imgKey);
-            if (this.headbuttCooldown > 0 && !this.isHeadbutting && !isDashing) ctx.globalAlpha = 0.7; else ctx.globalAlpha = 1.0;
-            if (img && img.complete && img.naturalWidth !== 0) ctx.drawImage(img, this.x, this.y, this.width, this.height);
-            else { ctx.fillStyle = '#ff3366'; ctx.fillRect(this.x, this.y, this.width, this.height); }
+            if (this.headbuttCooldown > 0 && !this.isHeadbutting && !isDashing) ctx.globalAlpha = 0.7; 
+            else ctx.globalAlpha = 1.0;
+
+            if (img && img.complete && img.naturalWidth !== 0) {
+                // ★ this.x ではなく drawX を使うことで踏み込みが反映されます
+                ctx.drawImage(img, drawX, this.y, this.width, this.height);
+            } else { 
+                ctx.fillStyle = '#ff3366'; ctx.fillRect(drawX, this.y, this.width, this.height); 
+            }
+            ctx.restore();
+
+            // インパクトライン（衝撃波）の描画
+            if (this.isHeadbutting) {
+const headX = drawX + this.width; // Dinoの頭の先端座標
+    const headY = this.y + 15;        // 描画の基準高さ
+    ctx.strokeStyle = 'white';        // 視認性の高い白 
+    ctx.lineCap = 'round';            // 線の端を丸くして質感を出す
+
+    // 1. 上段：細くて短いライン（速さを表現）
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(headX - 5, headY);  
+    ctx.lineTo(headX + 15, headY); 
+    ctx.stroke();
+
+    // 2. 中段：一番太くて長いメインライン（重みを表現）
+    ctx.lineWidth = 7; 
+    ctx.beginPath();
+    ctx.moveTo(headX - 10, headY + 12); 
+    ctx.lineTo(headX + 30, headY + 12); 
+    ctx.stroke(); 
+
+    // 3. 下段：中くらいの太さ（バランスを調整）
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(headX + -5, headY + 25); 
+    ctx.lineTo(headX + 25, headY + 25); 
+    ctx.stroke(); 
+            }
             ctx.globalAlpha = 1.0;
         }
-        getBounds() { return { x: this.x + 20, y: this.y + 15, width: this.width - 40, height: this.height - 15 }; }
+
+        getBounds() { return { x: this.x + this.xOffset + 20, y: this.y + 15, width: this.width - 40, height: this.height - 15 }; }
+        
         getHeadbuttBounds() {
             if (!this.isHeadbutting) return null;
-            return { x: this.x + this.width - 25, y: this.y + 10, width: 35, height: 40 };
+            return { x: this.x + this.xOffset + this.width - 25, y: this.y + 10, width: 35, height: 40 };
         }
     }
 
