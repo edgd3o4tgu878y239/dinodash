@@ -528,14 +528,13 @@
 
             canvas {
                 width: 100%;
-                aspect-ratio: 3/1;
+                aspect-ratio: 2/1;
                 height: auto;
                 border: 2px solid #333;
                 border-radius: 4px;
                 background: #f0f0f0;
                 margin-bottom: 20px;
             }
-
             #title-layer, #menu-layer, #ui-layer, #loading-layer {
                 border-radius: 16px; 
             }
@@ -1594,9 +1593,15 @@ const headX = drawX + this.width; // Dinoの頭の先端座標
             this.effectContainer = document.getElementById('effect-container');
             
             const resize = () => {
-                const container = document.getElementById('game-container');
-                this.canvas.width = CONFIG.CANVAS_WIDTH;
-                this.canvas.height = CONFIG.CANVAS_HEIGHT;
+                const isMobileNow = window.innerWidth <= 600;
+                // スマホなら 600x300 (2:1)、PCなら 900x300 (3:1)
+                this.canvas.width = isMobileNow ? 600 : 900;
+                this.canvas.height = 300;
+                
+                // 恐竜の初期位置もスマホに合わせて少し調整
+                if (this.dino) {
+                    this.dino.targetX = isMobileNow ? 40 : CONFIG.DINO_X;
+                }
             };
             window.addEventListener('resize', resize);
             resize();
