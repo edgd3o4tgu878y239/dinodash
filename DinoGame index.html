@@ -869,10 +869,14 @@
             return Promise.resolve();
         }
 
-        async playBgm() {
+        async playBgm(options = {}) {
+            const { resumeFirst = true } = options;
             if (this.isMuted) return;
             if (this.bgm) {
-                if (this.ctx.state === 'suspended') await this.resumeContext();
+                if (this.ctx.state === 'suspended') {
+                    if (resumeFirst) await this.resumeContext();
+                    else this.resumeContext().catch(error => console.warn('AudioContext resume failed:', error));
+                }
                 
                 this.bgm.currentTime = 0;
                 try {
@@ -886,7 +890,14 @@
                 this.startSimpleBgm();
             }
         }
-        async unlockAndPlayBgm() {
+        async unlockAndPlayBgm(options = {}) {
+            const { immediate = false } = options;
+            if (immediate) {
+                const playPromise = this.playBgm({ resumeFirst: false });
+                this.warmUp().catch(error => console.warn('Audio warm-up failed:', error));
+                return playPromise;
+            }
+
             await this.warmUp();
             return this.playBgm();
         }
@@ -1152,7 +1163,7 @@
     licenseClose.onclick = () => { licenseModal.classList.remove('active'); setTimeout(() => licenseModal.style.display = "none", 300); };
     licenseModal.onclick = (e) => { if (e.target === licenseModal) licenseClose.onclick(); };
 
-    async function handleTitleInteraction() {
+    function handleTitleInteraction() {
     if (titleLayer.classList.contains('hidden')) return;
 
     if (titlePhase === 0) {
@@ -1169,11 +1180,9 @@
         const notice = document.getElementById('bgm-notice');
         if (notice) notice.style.display = 'none';
         
-        try {
-            await soundManager.unlockAndPlayBgm();
-        } catch (error) {
+        soundManager.unlockAndPlayBgm({ immediate: true }).catch(error => {
             console.warn('BGM unlock failed during title interaction:', error);
-        }
+        });
         soundManager.playSelect();
         // --- ★ここまで ---
 
@@ -1187,7 +1196,7 @@
     } 
     else if (titlePhase === 1) {
         // (省略：既存のメニュー遷移処理)
-        await soundManager.resumeContext();
+        soundManager.resumeContext().catch(error => console.warn('AudioContext resume failed:', error));
         soundManager.playDashStart(); 
         
         titleImg2.style.transform = 'translateX(100%)';
@@ -1200,8 +1209,25 @@
     }
 }
 
-    titleLayer.addEventListener('click', handleTitleInteraction);
-    titleLayer.addEventListener('touchstart', (e) => { e.preventDefault(); handleTitleInteraction(); }, {passive: false});
+    let lastTitlePointerTime = 0;
+    function handleTitlePointer(e) {
+        lastTitlePointerTime = Date.now();
+        handleTitleInteraction();
+    }
+    function handleTitleClick(e) {
+        if (Date.now() - lastTitlePointerTime < 700) return;
+        handleTitleInteraction();
+    }
+
+    if (window.PointerEvent) {
+        titleLayer.addEventListener('pointerup', handleTitlePointer);
+    } else {
+        titleLayer.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            handleTitlePointer(e);
+        }, {passive: false});
+    }
+    titleLayer.addEventListener('click', handleTitleClick);
     window.addEventListener('keydown', (e) => {
         if (!titleLayer.classList.contains('hidden')) {
             handleTitleInteraction();
